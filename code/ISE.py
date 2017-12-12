@@ -88,17 +88,9 @@ def LT():
     '''
     ActivitySet = seedset[:]
     nodeStatus = InitNodeStatus.copy()
+    count = len(ActivitySet)
     nodeThreshold = {}
     weights = {}
-    for i in graph.keys():
-        threshold = random.random()
-        nodeThreshold[i] = threshold
-        weights[i] = 0
-        if threshold == 0:
-            print "!"
-            ActivitySet.append(i)
-            nodeStatus[i] = 1
-    count = len(ActivitySet)
 
     while ActivitySet:
         newActivitySet = []
@@ -106,6 +98,9 @@ def LT():
             for edge in graph.iteroutedges(seed):
                 neighbor = edge.target
                 if nodeStatus[neighbor] == 0:
+                    if neighbor not in nodeThreshold:
+                        nodeThreshold[neighbor] = random.random()
+                        weights[neighbor] = 0
                     weights[neighbor] = weights[neighbor] + edge.weight
                     if weights[neighbor] >= nodeThreshold[neighbor]:
                         nodeStatus[neighbor] = 1
@@ -125,5 +120,5 @@ if __name__ == '__main__':
     print seedset
 
     for model in ["IC","LT"]:
-        print ise(10000, model)
+        print ise(100000, model)
     print time.time() - start
