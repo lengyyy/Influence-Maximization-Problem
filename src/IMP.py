@@ -2,11 +2,12 @@ from edge import Edge
 from graph import Graph
 import random
 import time
+import heapq
 
 # Arguments from commend line
 datafile = "../test data/network.txt"
-k = 6
-model = 'IC'
+k = 4
+model_type = 'IC'
 termination_type = 0
 runTime = 0
 randomSeed = 123
@@ -33,39 +34,67 @@ def read_file(datafile):
         graph.add_edge(edge)
 
 
-def imp (model, k):
-    '''
-    Influence maximization problem
-    :param times: the run times
-    :param model: The diffusion model: IC or LT
-    :param k: The number of seed
-    :return: the average influence spread
-    '''
-    if model == "IC":
-        return gernralGreedy_IC(k)
-    else:
-        pass
 
-def gernralGreedy_IC(k):
+def gernralGreedy(k, model):
     S = set()
     R = 10000
     Candidate = graph.keys()
     for i in range(k):
         addnode = []
         for node in Candidate:
-            influenceSpread = float(0)
+            Spread = float(0)
             newSeed = S.copy()
             newSeed.add(node)
             for i in range(R):
-                influenceSpread = influenceSpread + ise_IC(newSeed)
-            influenceSpread = influenceSpread/R
-            addnode.append((influenceSpread, node))
+                Spread = Spread + model(newSeed)
+            Spread = Spread/R
+            addnode.append((Spread, node))
         addnode.sort(reverse=True)
-        print addnode
         winner = addnode[0][1]
         S.add(winner)
         Candidate.remove(winner)
     return S, addnode[0][0]
+
+
+
+
+def CELF(k, model):
+    S = set()
+    R = 10000
+    nodeHeap = []
+    preSpread = 1
+    for node in graph.keys():
+        delta = float(0)
+        for i in range(R):
+            delta = delta + model({node})
+        delta = delta / R - preSpread
+        nodeHeap.append((-delta, delta, node, 1))
+    heapq.heapify(nodeHeap)
+    # while nodeHeap:
+    #     print heapq.heappop(nodeHeap)
+    # quit()
+    winner = heapq.heappop(nodeHeap)
+    preSpread = winner[1] + preSpread
+    S.add(winner[2])
+
+
+    for i in range(k-1):
+        seedId = i + 2
+        while nodeHeap[0][3] != seedId:
+            maxOne = nodeHeap[0]
+            delta = float(0)
+            newSeed = S.copy()
+            newSeed.add(maxOne[2])
+            for i in range(R):
+                delta = delta + model(newSeed)
+            delta = delta / R - preSpread
+            heapq.heapreplace(nodeHeap,(-delta, delta, maxOne[2], seedId))
+
+        winner = heapq.heappop(nodeHeap)
+        preSpread = winner[1] + preSpread
+        S.add(winner[2])
+
+    return S, preSpread
 
 
 def ise_IC(seedset):
@@ -97,8 +126,8 @@ def ise_LT(seedset):
     ISE based on linear threshold model
     :return: the influence spread
     '''
-    ActivitySet = seedset[:]
-    nodeActived = set(seedset)
+    ActivitySet = list(seedset)
+    nodeActived = seedset.copy()
     count = len(ActivitySet)
     nodeThreshold = {}
     weights = {}
@@ -128,6 +157,8 @@ if __name__ == '__main__':
     print n_nodes
     print n_edges
 
-    for model in ["IC"]:
-        print imp(model, k)
+    print "IC", gernralGreedy(k, ise_IC)
+    print "LT", gernralGreedy(k, ise_LT)
+    print "CELF_IC", CELF(k, ise_IC)
+    print "CELF_LT", CELF(k,ise_LT)
     print time.time() - start
