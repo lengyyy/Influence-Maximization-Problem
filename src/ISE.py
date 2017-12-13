@@ -5,7 +5,7 @@ import time
 
 # Arguments from commend line
 datafile = "../test data/network.txt"
-seedfile = "../test data/seeds2.txt"
+seedfile = "../test data/seeds.txt"
 model = 'IC'
 termination_type = 0
 runTime = 0
@@ -46,14 +46,9 @@ def ise (times, model):
     :return: the average influence spread
     '''
     sum = float(0)
-    if model == "IC":
-        for i in range(times):
-            sum = sum + IC()
-        return sum/times
-    else:
-        for i in range(times):
-            sum = sum + LT()
-        return sum/times
+    for i in range(times):
+        sum = sum + model()
+    return sum/times
 
 def IC():
     '''
@@ -116,6 +111,6 @@ if __name__ == '__main__':
     print n_edges
     print seedset
 
-    for model in ["IC","LT"]:
+    for model in [IC, LT]:
         print ise(10000, model)
     print time.time() - start

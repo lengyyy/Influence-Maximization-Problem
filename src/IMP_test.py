@@ -64,7 +64,7 @@ def gernralGreedy(k, model):
 def CELF(k, model):
     global n
     S = set()
-    R = 1000
+    R = 10000
     nodeHeap = []
     preSpread = 0
     for node in graph.keys():
@@ -101,6 +101,7 @@ def CELF(k, model):
 
     return S, preSpread
 
+
 def Heuristics0(k, model):
     global outdegree
     t_dic = {}
@@ -120,6 +121,7 @@ def Heuristics0(k, model):
     for i in range(R):
         spread = spread + model(S)
     return S, spread/R
+
 
 def Heuristics1(k, model):
     global outdegree
@@ -147,6 +149,7 @@ def Heuristics1(k, model):
     for i in range(R):
         spread = spread + model(S)
     return S, spread/R
+
 
 def Heuristics2(k, model):
     global outdegree
@@ -231,25 +234,22 @@ if __name__ == '__main__':
     start = time.time()
     random.seed()
     read_file(datafile)
-    print n_nodes
-    print n_edges
-    print
-    print time.time()-start
 
     #for k in [1, 4, 10, 20, 30, 50]:
-    for k in [10]:
+    for k in [4]:
+        print "k=",k
         for model in (ise_IC, ise_LT):
-            # result_g = gernralGreedy(k, model)
-            # result_celf = CELF(k, model)
-            # print "greedy",result_g
-            # print "celf", result_celf
+            result_g = gernralGreedy(k, model)
+            result_celf = CELF(k, model)
+            print "greedy     ",result_g
+            print "celf       ", result_celf
             print "Heuristics0",Heuristics0(k, model)
             print "Heuristics1",Heuristics1(k, model)
             print "Heuristics2",Heuristics2(k, model)
-            # print result_g[0] == result_celf[0]
+            print result_g[0] == result_celf[0]
             print
 
-        print n
         print "--------------------------------"
+        print
 
     print time.time() - start

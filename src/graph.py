@@ -60,6 +60,17 @@ class Graph(dict):
             if source in self[target]:
                 yield self[target][source]
 
+    def outdegree(self, source):
+        """Return the outdegree of the node."""
+        return len(self[source])
+
+    def indegree(self, source):
+        """Return the indegree of the node."""
+        counter = 0
+        for target in self.iternodes():
+            if source in self[target]:
+                counter += 1
+        return counter
 
 
     def show(self):
