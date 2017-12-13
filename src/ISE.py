@@ -3,13 +3,15 @@ from graph import Graph
 import random
 import time
 
+# Arguments from commend line
 datafile = "../test data/network.txt"
-seedfile = "../test data/seeds.txt"
+seedfile = "../test data/seeds2.txt"
 model = 'IC'
 termination_type = 0
 runTime = 0
 randomSeed = 123
 
+# Global variables
 n_nodes = 0
 n_edges = 0
 graph = Graph()
@@ -18,10 +20,9 @@ seedset = []
 
 def read_file(datafile, seedfile):
     """
-
-    :param datafile:
-    :param seedfile:
-    :return:
+    Read the network data file and seed data file, to get the graph and seed set.
+    :param datafile: the absolute path of network file
+    :param seedfile: the absolute path of seed set file
     """
     global n_nodes, n_edges ,graph, seedset
     lines = open(datafile).readlines()
@@ -39,10 +40,10 @@ def read_file(datafile, seedfile):
 
 def ise (times, model):
     '''
-
-    :param times:
-    :param model:
-    :return:
+    Influence spread estimation
+    :param times: the run times
+    :param model: The diffusion model: IC or LT
+    :return: the average influence spread
     '''
     sum = float(0)
     if model == "IC":
@@ -56,8 +57,8 @@ def ise (times, model):
 
 def IC():
     '''
-
-    :return:
+    Ise based on Independent Cascade model
+    :return: the influence spread
     '''
     ActivitySet = seedset[:]
     nodeActived = set(seedset)
@@ -79,8 +80,8 @@ def IC():
 
 def LT():
     '''
-
-    :return:
+    ISE based on linear threshold model
+    :return: the influence spread
     '''
     ActivitySet = seedset[:]
     nodeActived = set(seedset)
@@ -116,5 +117,5 @@ if __name__ == '__main__':
     print seedset
 
     for model in ["IC","LT"]:
-        print ise(100000, model)
+        print ise(10000, model)
     print time.time() - start
