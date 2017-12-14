@@ -28,8 +28,8 @@ def read_file(datafile):
     """
     global n_nodes, n_edges, graph
     lines = open(datafile).readlines()
-    n_nodes = lines[0].split()[0]
-    n_edges = lines[0].split()[1]
+    n_nodes = int(lines[0].split()[0])
+    n_edges = int(lines[0].split()[1])
     for i in lines[1:]:
         thisline = i.split()
         edge = Edge(int(thisline[0]), int(thisline[1]), float(thisline[2]))
@@ -57,11 +57,11 @@ def gernralGreedy(k, model):
     return S, addnode[0][0]
 
 
-def heuristicsCELF(k,model):
+def heuristicsCELF(k, model):
     num_seed = 8*k
-    if num_seed > n_nodes:
+    if 8*k > n_nodes:
         num_seed = n_nodes
-    seedset = Heuristics0(num_seed, model)
+    seedset = Heuristics(num_seed, model)
     print seedset
     return CELF(k, model, seedset)
 
@@ -108,7 +108,7 @@ def CELF(k, model, seedset):
     return S, preSpread
 
 
-def Heuristics0(k, model):
+def Heuristics(k, model):
     global outdegree
     t_dic = {}
     S = set()
@@ -123,11 +123,36 @@ def Heuristics0(k, model):
         outdegree2.pop(winner)
         S.add(winner)
 
-    # spread = float(0)
-    # for i in range(R):
-    #     spread = spread + model(S)
     return S
 
+def Heuristics3(k, model):
+    global outdegree
+    h = {}
+    S = set()
+    R = 10000
+    for node in graph.keys():
+        outdegree[node] = graph.outdegree(node)
+    for node in graph.keys():
+        h[node] = 0
+        for e in graph.iteroutedges(node):
+            neighbor = e.target
+            h[node] += e.weight*outdegree[neighbor]
+
+    for i in range(k):
+        winner = max(h, key=h.get)
+        h.pop(winner)
+        S.add(winner)
+        neighbor_winner = graph.neighbor(winner)
+        for e in graph.iteroutedges(winner):
+            neighbor = e.target
+            if neighbor in h:
+                union = len(set(neighbor_winner).intersection(set(graph.neighbor(neighbor))))
+                h[neighbor] = (1-e.weight)*(h[neighbor]-union)
+
+    spread = float(0)
+    for i in range(R):
+        spread = spread + model(S)
+    return S, spread/R
 
 def Heuristics1(k, model):
     global outdegree
@@ -159,25 +184,27 @@ def Heuristics1(k, model):
 
 def Heuristics2(k, model):
     global outdegree
+    h = {}
     S = set()
     R = 10000
     for node in graph.keys():
         outdegree[node] = graph.outdegree(node)
-
-    outdegree2 = outdegree.copy()
-    for i in range(k):
-        winner = max(outdegree2, key=outdegree.get)
-        outdegree2.pop(winner)
-        S.add(winner)
-        for e in graph.iteroutedges(winner):
+    for node in graph.keys():
+        h[node] = 0
+        for e in graph.iteroutedges(node):
             neighbor = e.target
-            if neighbor in outdegree2:
-                outdegree2[neighbor] -= e.weight*outdegree[neighbor]
+            h[node] += e.weight * outdegree[neighbor]
+
+    for i in range(k):
+        winner = max(h, key=h.get)
+        h.pop(winner)
+        S.add(winner)
+
 
     spread = float(0)
     for i in range(R):
         spread = spread + model(S)
-    return S, spread/R
+    return S, spread / R
 
 
 def ise_IC(seedset):
@@ -242,15 +269,16 @@ if __name__ == '__main__':
     print
 
     #for k in [1, 4, 10, 20, 30, 50]:
-    for k in [4]:
+    for k in [10]:
         for model in (ise_IC, ise_LT):
             # result_g = gernralGreedy(k, model)
             # result_celf = CELF(k, model)
             # print "greedy",result_g
             # print "celf", result_celf
             # print "Heuristics0",Heuristics0(k, model)
-            # print "Heuristics1",Heuristics1(k, model)
-            # print "Heuristics2",Heuristics2(k, model)
+            print "Heuristics1", Heuristics1(k, model)
+            print "Heuristics2", Heuristics2(k, model)
+            print "Heuristics3", Heuristics3(k, model)
             print "Combine", heuristicsCELF(k,model)
             # print result_g[0] == result_celf[0]
             print
