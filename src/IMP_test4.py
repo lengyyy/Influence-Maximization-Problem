@@ -58,7 +58,7 @@ def gernralGreedy(k, model):
 
 
 def heuristicsCELF(k, model):
-    num_seed = 4*k
+    num_seed = 5*k
     if num_seed > n_nodes:
         num_seed = n_nodes
     seedset = Heuristics3(num_seed, model)
@@ -265,7 +265,7 @@ if __name__ == '__main__':
     read_file(datafile)
     print n_nodes
     print n_edges
-    print "4times seed"
+    print "5times seed"
     print "celf r=5000"
 
     #for k in [1, 4, 10, 20, 30, 50]:

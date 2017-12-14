@@ -8,9 +8,9 @@ NUMBER_RUN = 1
 
 for i in range(NUMBER_RUN):
     seed = str(time.time())
-    out_file = open('./output/result_bigdata_k4.txt', 'a')
+    out_file = open('./output/result_bigdata_k5.txt', 'a')
     # print(dir_path)
-    command = ['python2', 'IMP_test2.py']
+    command = ['python2', 'IMP_test4.py']
     process = subprocess.Popen(command, stdout=out_file)
     time_start = time.time()
     process.wait()
