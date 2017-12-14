@@ -36,8 +36,6 @@ def read_file(datafile):
         graph.add_edge(edge)
 
 
-
-
 def gernralGreedy(k, model):
     S = set()
     R = 10000
@@ -59,15 +57,23 @@ def gernralGreedy(k, model):
     return S, addnode[0][0]
 
 
+def heuristicsCELF(k,model):
+    num_seed = 8*k
+    if num_seed > n_nodes:
+        num_seed = n_nodes
+    seedset = Heuristics0(num_seed, model)
+    print seedset
+    return CELF(k, model, seedset)
 
 
-def CELF(k, model):
+def CELF(k, model, seedset):
     global n
     S = set()
     R = 1000
     nodeHeap = []
     preSpread = 0
-    for node in graph.keys():
+    #seedset = graph.keys()
+    for node in seedset:
         # if graph.outdegree(node) == 0:
         #     nodeHeap.append((-1, 1, node, 1))
         #     continue
@@ -101,6 +107,7 @@ def CELF(k, model):
 
     return S, preSpread
 
+
 def Heuristics0(k, model):
     global outdegree
     t_dic = {}
@@ -116,10 +123,11 @@ def Heuristics0(k, model):
         outdegree2.pop(winner)
         S.add(winner)
 
-    spread = float(0)
-    for i in range(R):
-        spread = spread + model(S)
-    return S, spread/R
+    # spread = float(0)
+    # for i in range(R):
+    #     spread = spread + model(S)
+    return S
+
 
 def Heuristics1(k, model):
     global outdegree
@@ -148,6 +156,7 @@ def Heuristics1(k, model):
         spread = spread + model(S)
     return S, spread/R
 
+
 def Heuristics2(k, model):
     global outdegree
     S = set()
@@ -169,9 +178,6 @@ def Heuristics2(k, model):
     for i in range(R):
         spread = spread + model(S)
     return S, spread/R
-
-
-
 
 
 def ise_IC(seedset):
@@ -234,18 +240,18 @@ if __name__ == '__main__':
     print n_nodes
     print n_edges
     print
-    print time.time()-start
 
     #for k in [1, 4, 10, 20, 30, 50]:
-    for k in [10]:
+    for k in [4]:
         for model in (ise_IC, ise_LT):
             # result_g = gernralGreedy(k, model)
             # result_celf = CELF(k, model)
             # print "greedy",result_g
             # print "celf", result_celf
-            print "Heuristics0",Heuristics0(k, model)
-            print "Heuristics1",Heuristics1(k, model)
-            print "Heuristics2",Heuristics2(k, model)
+            # print "Heuristics0",Heuristics0(k, model)
+            # print "Heuristics1",Heuristics1(k, model)
+            # print "Heuristics2",Heuristics2(k, model)
+            print "Combine", heuristicsCELF(k,model)
             # print result_g[0] == result_celf[0]
             print
 

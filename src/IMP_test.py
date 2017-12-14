@@ -235,8 +235,8 @@ if __name__ == '__main__':
     random.seed()
     read_file(datafile)
 
-    for k in [1, 4, 10, 20, 30, 50]:
-    #for k in [4]:
+    #for k in [1, 4, 10, 20, 30, 50]:
+    for k in [6]:
         print "k=",k
         for model in (ise_IC, ise_LT):
             result_g = gernralGreedy(k, model)
