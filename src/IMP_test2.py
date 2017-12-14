@@ -5,7 +5,7 @@ import time
 import heapq
 
 # Arguments from commend line
-datafile = "../test data/network.txt"
+datafile = "../test data/NetHEPT.txt"
 k = 4
 model_type = 'IC'
 termination_type = 0
@@ -68,14 +68,11 @@ def heuristicsCELF(k, model):
 def CELF(k, model, seedset):
     global n
     S = set()
-    R = 10000
+    R = 5000
     nodeHeap = []
     preSpread = 0
     #seedset = graph.keys()
     for node in seedset:
-        # if graph.outdegree(node) == 0:
-        #     nodeHeap.append((-1, 1, node, 1))
-        #     continue
         delta = float(0)
         for i in range(R):
             delta = delta + model({node})
@@ -128,7 +125,7 @@ def Heuristics3(k, model):
     global outdegree
     h = {}
     S = set()
-    R = 10000
+    #R = 10000
     for node in graph.keys():
         outdegree[node] = graph.outdegree(node)
     for node in graph.keys():
@@ -268,10 +265,12 @@ if __name__ == '__main__':
     read_file(datafile)
     print n_nodes
     print n_edges
-    print "4times"
+    print "4times seed"
+    print "celf r=5000"
 
     #for k in [1, 4, 10, 20, 30, 50]:
-    for k in [1, 4, 10, 20, 30 ,50]:
+    for k in [4]:
+        start2 = time.time()
         for model in (ise_IC, ise_LT):
             # result_g = gernralGreedy(k, model)
             # result_celf = CELF(k, model)
@@ -283,9 +282,8 @@ if __name__ == '__main__':
             #print "Heuristics3", Heuristics3(k, model)
             print "Combine", heuristicsCELF(k,model)
             # print result_g[0] == result_celf[0]
-            print
+        print time.time()-start2
 
-        print n
         print "--------------------------------"
 
     print time.time() - start

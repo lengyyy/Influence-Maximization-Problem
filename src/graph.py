@@ -72,6 +72,9 @@ class Graph(dict):
                 counter += 1
         return counter
 
+    def neighbor(self,source):
+        return self[source].keys()
+
 
     def show(self):
         """The graph presentation."""
