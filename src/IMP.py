@@ -3,9 +3,11 @@ from graph import Graph
 import random
 import time
 import heapq
+from scipy import stats
+import numpy as np
 
 # Arguments from commend line
-datafile = "../test data/network.txt"
+datafile = "../test data/NetHEPT.txt"
 k = 4
 model_type = 'IC'
 termination_type = 0
@@ -57,12 +59,12 @@ def gernralGreedy(k, model):
     return S, addnode[0][0]
 
 
-def heuristicsCELF(k, model):
+def heuristicsCELF(k, model, model2):
     num_seed = 4*k
     if num_seed > n_nodes:
         num_seed = n_nodes
     seedset = Heuristics3(num_seed, model)
-    return CELF(k, model, seedset)
+    return model2(k, model, seedset)
 
 
 def CELF(k, model, seedset):
@@ -71,11 +73,7 @@ def CELF(k, model, seedset):
     R = 10000
     nodeHeap = []
     preSpread = 0
-    #seedset = graph.keys()
     for node in seedset:
-        # if graph.outdegree(node) == 0:
-        #     nodeHeap.append((-1, 1, node, 1))
-        #     continue
         delta = float(0)
         for i in range(R):
             delta = delta + model({node})
@@ -107,28 +105,99 @@ def CELF(k, model, seedset):
     return S, preSpread
 
 
-def Heuristics(k, model):
-    global outdegree
-    t_dic = {}
+def CELF_improved(k, model, seedset):
+    global n
     S = set()
-    R = 10000
-    for node in graph.keys():
-        outdegree[node] = graph.outdegree(node)
-        t_dic[node] = 0
+    Rs = {100: 1000, 1000: 10000}
+    nodeHeap = []
+    preSpread = 0
+    for node in seedset:
+        delta = []
+        for i in range(100):
+            delta.append(model({node}))
+        deltas = np.array(delta)
+        mean = deltas.mean()
+        std = deltas.std()
+        if std == 0:
+            high = delta[0]
+        else:
+            high = stats.norm.interval(0.95, mean, std)[1]
+        #print interval
+        nodeHeap.append((-high, high, node, -1, 100))
+    heapq.heapify(nodeHeap)
 
-    outdegree2 = outdegree.copy()
-    for i in range(k):
-        winner = max(outdegree2, key=outdegree.get)
-        outdegree2.pop(winner)
-        S.add(winner)
+    for i1 in range(k):
 
-    return S
+        while nodeHeap[0][3] != i1 or nodeHeap[0][4] != 10000:
+            maxOne = nodeHeap[0]
+            delta = float(0)
+            newSeed = S.copy()
+            newSeed.add(maxOne[2])
+            if maxOne[3] == i1:
+                thisR = Rs[maxOne[4]]
+            else:
+                thisR = 100
+            for i in range(thisR):
+                delta = delta + model(newSeed)
+            delta = delta / thisR - preSpread
+            heapq.heapreplace(nodeHeap, (-delta, delta, maxOne[2], i1, thisR))
+
+        winner = heapq.heappop(nodeHeap)
+        preSpread = winner[1] + preSpread
+        S.add(winner[2])
+
+    return S, preSpread
+
+
+def CELF_improved2(k, model, seedset):
+    global n
+    S = set()
+    Rs = {100: 1000, 1000: 10000}
+    nodeHeap = []
+    preSpread = 0
+    for node in seedset:
+        delta = []
+        for i in range(100):
+            delta.append(model({node}))
+        deltas = np.array(delta)
+        mean = deltas.mean()
+        std = deltas.std()
+        if std == 0:
+            high = delta[0]
+        else:
+            high = stats.norm.interval(0.95, mean, std)[1]
+        #print interval
+        nodeHeap.append((-high, high, node, -1, 100))
+    heapq.heapify(nodeHeap)
+
+    for i1 in range(k):
+
+        while nodeHeap[0][3] != i1 or nodeHeap[0][4] != 10000:
+            maxOne = nodeHeap[0]
+            delta = float(0)
+            newSeed = S.copy()
+            newSeed.add(maxOne[2])
+            if maxOne[3] == i1:
+                thisR = Rs[maxOne[4]]
+            else:
+                thisR = 100
+            for i in range(thisR):
+                delta = delta + model(newSeed)
+            delta = delta / thisR - preSpread
+            heapq.heapreplace(nodeHeap, (-delta, delta, maxOne[2], i1, thisR))
+
+        winner = heapq.heappop(nodeHeap)
+        preSpread = winner[1] + preSpread
+        S.add(winner[2])
+
+    return S, preSpread
+
 
 def Heuristics3(k, model):
     global outdegree
     h = {}
     S = set()
-    R = 10000
+    # R = 10000
     for node in graph.keys():
         outdegree[node] = graph.outdegree(node)
     for node in graph.keys():
@@ -271,17 +340,18 @@ if __name__ == '__main__':
     print "4times"
 
     #for k in [1, 4, 10, 20, 30, 50]:
-    for k in [1, 4, 10, 20, 30 ,50]:
-        for model in (ise_IC, ise_LT):
+    for k in [1]:
+        for model in [ise_IC, ise_LT]:
+            #for model2 in [CELF_improved,CELF_improved2]:
             # result_g = gernralGreedy(k, model)
-            # result_celf = CELF(k, model)
+            result_celf = CELF(k, model, set(graph.keys()))
             # print "greedy",result_g
-            # print "celf", result_celf
+            print "celf", result_celf
             # print "Heuristics0",Heuristics0(k, model)
             # print "Heuristics1", Heuristics1(k, model)
             # print "Heuristics2", Heuristics2(k, model)
             #print "Heuristics3", Heuristics3(k, model)
-            print "Combine", heuristicsCELF(k,model)
+            print "Combine", heuristicsCELF(k, model, CELF_improved)
             # print result_g[0] == result_celf[0]
             print
 
