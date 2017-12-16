@@ -7,7 +7,7 @@ from scipy import stats
 import numpy as np
 
 # Arguments from commend line
-datafile = "../test data/NetHEPT.txt"
+datafile = "../test data/network.txt"
 k = 4
 model_type = 'IC'
 termination_type = 0
@@ -19,7 +19,7 @@ n_nodes = 0
 n_edges = 0
 graph = Graph()
 outdegree = {}
-n =0
+n = 0
 
 
 def read_file(datafile):
@@ -63,7 +63,7 @@ def heuristicsCELF(k, model, model2):
     num_seed = 4*k
     if num_seed > n_nodes:
         num_seed = n_nodes
-    seedset = Heuristics3(num_seed, model)
+    seedset = Heuristics(num_seed)
     return model2(k, model, seedset)
 
 
@@ -376,7 +376,8 @@ def CELF_improved22(k, model, seedset):
 
     return S, preSpread
 
-def Heuristics3(k, model):
+
+def Heuristics(k):
     global outdegree
     h = {}
     S = set()
@@ -407,58 +408,6 @@ def Heuristics3(k, model):
 
     #return S, spread/R
     return S
-
-def Heuristics1(k, model):
-    global outdegree
-    t_dic = {}
-    S = set()
-    R = 10000
-    for node in graph.keys():
-        outdegree[node] = graph.outdegree(node)
-        t_dic[node] = 0
-
-    outdegree2 = outdegree.copy()
-    for i in range(k):
-        winner = max(outdegree2, key=outdegree.get)
-        outdegree2.pop(winner)
-        S.add(winner)
-        for e in graph.iteroutedges(winner):
-            neighbor = e.target
-            if neighbor in outdegree2:
-                t_dic[neighbor] += 1
-                t = t_dic[neighbor]
-                d = outdegree2[neighbor]
-                outdegree2[neighbor] = d - 2*t - (d-t)*t*e.weight
-
-    spread = float(0)
-    for i in range(R):
-        spread = spread + model(S)
-    return S, spread/R
-
-
-def Heuristics2(k, model):
-    global outdegree
-    h = {}
-    S = set()
-    R = 10000
-    for node in graph.keys():
-        outdegree[node] = graph.outdegree(node)
-    for node in graph.keys():
-        h[node] = 0
-        for e in graph.iteroutedges(node):
-            neighbor = e.target
-            h[node] += e.weight * outdegree[neighbor]
-
-    for i in range(k):
-        winner = max(h, key=h.get)
-        h.pop(winner)
-        S.add(winner)
-
-
-    spread = float(0)
-    for i in range(R):
-        spread = spread + model(S)
-    return S, spread / R
 
 
 def ise_IC(seedset):
@@ -491,6 +440,8 @@ def ise_LT(seedset):
     ISE based on linear threshold model
     :return: the influence spread
     '''
+    global n
+    n += 1
     ActivitySet = list(seedset)
     nodeActived = seedset.copy()
     count = len(ActivitySet)
@@ -521,12 +472,12 @@ if __name__ == '__main__':
     read_file(datafile)
 
     #for k in [1, 4, 10, 20, 30, 50]:
-    for k in [10]:
-        for model in [ise_IC]:
+    for k in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50]:
+        for model in [ise_IC, ise_LT]:
             #for model2 in [CELF_improved0]:
             #for model2 in [CELF_improved0, CELF_improved, CELF_improved2]:
-            for model2 in [CELF_improved_10,CELF_improved20]:
-                for i in range(2):
+            for model2 in [CELF_improved_10]:
+                for i in range(1):
                     start2 =time.time()
                     n = 0
                     # result_g = gernralGreedy(k, model)
@@ -536,8 +487,28 @@ if __name__ == '__main__':
                     # print "Heuristics0",Heuristics0(k, model)
                     # print "Heuristics1", Heuristics1(k, model)
                     # print "Heuristics2", Heuristics2(k, model)
-                    #print "Heuristics3", Heuristics3(k, model)
+                    # print "Heuristics3", Heuristics3(k, model)
                     print model2, heuristicsCELF(k, model, model2)
+
+
+
+                    # If no enough time
+
+                    # result = heuristicsCELF(k, model, model2)
+                    # result_seed = result[0]
+                    # res = k-len(result_seed)
+                    # if res != 0:
+                    #     for node in result_seed:
+                    #         graph.del_node(node)
+                    #     res_seed = Heuristics(res)
+                    #     print result_seed
+                    #     print res_seed
+                    # else:
+                    #     print res_seed
+
+
+
+
                     print n
                     print time.time()-start2
                     # print result_g[0] == result_celf[0]

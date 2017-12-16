@@ -60,6 +60,7 @@ def IC():
     '''
     ActivitySet = seedlist[:]
     nodeActived = set(seedlist)
+    count = len(ActivitySet)
 
     while ActivitySet:
         newActivitySet = []
@@ -71,8 +72,9 @@ def IC():
                     if random.random() < weight:
                         nodeActived.add(neighbor)
                         newActivitySet.append(neighbor)
+        count=count+len(newActivitySet)
         ActivitySet = newActivitySet
-    return len(nodeActived)
+    return count
 
 def LT():
     '''
@@ -112,6 +114,6 @@ if __name__ == '__main__':
     print n_edges
     print seedlist
 
-    for model in [IC]:
+    for model in [LT]:
         print ise(10000, model)
     print time.time() - start
