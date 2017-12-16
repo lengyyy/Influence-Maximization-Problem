@@ -2,10 +2,11 @@ from edge import Edge
 from graph import Graph
 import random
 import time
+from Queue import Queue
 
 # Arguments from commend line
-datafile = "../test data/network.txt"
-seedfile = "../test data/seeds.txt"
+datafile = "../test data/NetHEPT.txt"
+seedfile = "../test data/seeds2.txt"
 model = 'IC'
 termination_type = 0
 runTime = 0
@@ -15,7 +16,7 @@ randomSeed = 123
 n_nodes = 0
 n_edges = 0
 graph = Graph()
-seedset = []
+seedlist = []
 
 
 def read_file(datafile, seedfile):
@@ -24,7 +25,7 @@ def read_file(datafile, seedfile):
     :param datafile: the absolute path of network file
     :param seedfile: the absolute path of seed set file
     """
-    global n_nodes, n_edges ,graph, seedset
+    global n_nodes, n_edges , graph, seedlist
     lines = open(datafile).readlines()
     n_nodes = lines[0].split()[0]
     n_edges = lines[0].split()[1]
@@ -35,7 +36,7 @@ def read_file(datafile, seedfile):
 
     lines2 = open(seedfile).readlines()
     for i in lines2:
-        seedset.append(int(i))
+        seedlist.append(int(i))
 
 
 def ise (times, model):
@@ -50,14 +51,15 @@ def ise (times, model):
         sum = sum + model()
     return sum/times
 
+
+
 def IC():
     '''
     Ise based on Independent Cascade model
     :return: the influence spread
     '''
-    ActivitySet = seedset[:]
-    nodeActived = set(seedset)
-    count = len(ActivitySet)
+    ActivitySet = seedlist[:]
+    nodeActived = set(seedlist)
 
     while ActivitySet:
         newActivitySet = []
@@ -69,17 +71,16 @@ def IC():
                     if random.random() < weight:
                         nodeActived.add(neighbor)
                         newActivitySet.append(neighbor)
-        count = count + len(newActivitySet)
         ActivitySet = newActivitySet
-    return count
+    return len(nodeActived)
 
 def LT():
     '''
     ISE based on linear threshold model
     :return: the influence spread
     '''
-    ActivitySet = seedset[:]
-    nodeActived = set(seedset)
+    ActivitySet = seedlist[:]
+    nodeActived = set(seedlist)
     count = len(ActivitySet)
     nodeThreshold = {}
     weights = {}
@@ -109,8 +110,8 @@ if __name__ == '__main__':
     read_file(datafile, seedfile)
     print n_nodes
     print n_edges
-    print seedset
+    print seedlist
 
-    for model in [IC, LT]:
+    for model in [IC]:
         print ise(10000, model)
     print time.time() - start

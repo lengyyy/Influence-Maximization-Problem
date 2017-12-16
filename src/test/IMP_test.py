@@ -7,7 +7,7 @@ from scipy import stats
 import numpy as np
 
 # Arguments from commend line
-datafile = "../test data/NetHEPT.txt"
+datafile = "../../test data/NetHEPT.txt"
 k = 4
 model_type = 'IC'
 termination_type = 0
@@ -521,11 +521,12 @@ if __name__ == '__main__':
     read_file(datafile)
 
     #for k in [1, 4, 10, 20, 30, 50]:
-    for k in [10]:
+    for k in [6, 8, 10]:
         for model in [ise_IC]:
             #for model2 in [CELF_improved0]:
             #for model2 in [CELF_improved0, CELF_improved, CELF_improved2]:
-            for model2 in [CELF_improved_10,CELF_improved20]:
+            for model2 in [CELF_improved_10, CELF_improved_11, CELF_improved_12, CELF_improved20, CELF_improved21, CELF_improved22]:
+                print model2
                 for i in range(2):
                     start2 =time.time()
                     n = 0
@@ -537,12 +538,11 @@ if __name__ == '__main__':
                     # print "Heuristics1", Heuristics1(k, model)
                     # print "Heuristics2", Heuristics2(k, model)
                     #print "Heuristics3", Heuristics3(k, model)
-                    print model2, heuristicsCELF(k, model, model2)
+                    heuristicsCELF(k, model, model2)
                     print n
                     print time.time()-start2
                     # print result_g[0] == result_celf[0]
-                    print
-
-        print "--------------------------------"
+                print "---------------"
+            print "--------------------------------"
 
     print time.time() - start

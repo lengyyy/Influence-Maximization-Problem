@@ -75,6 +75,18 @@ class Graph(dict):
     def neighbor(self,source):
         return self[source].keys()
 
+    def del_node(self, node):
+        """Remove a node from the graph (with edges)."""
+        # The dictionary changes size during iteration.
+        for edge in list(self.iterinedges(node)):
+            self.del_edge(edge)
+        for edge in list(self.iteroutedges(node)):
+            self.del_edge(edge)
+        del self[node]
+
+    def del_edge(self, edge):
+        """Remove an edge from the graph."""
+        del self[edge.source][edge.target]
 
     def show(self):
         """The graph presentation."""
