@@ -212,95 +212,9 @@ def CELF_improved_11(k, model, seedset):
     return S, preSpread
 
 
-def CELF_improved_12(k, model, seedset):
-    # right slow
-    global n
-    S = set()
-    Rs = {100: 5000, 5000: 10000}
-    nodeHeap = []
-    preSpread = 0
-    for node in seedset:
-        delta = []
-        for i in range(100):
-            delta.append(model({node}))
-        std = stats.sem(delta)
-        if std == 0:
-            high = delta[0]
-        else:
-            high = stats.t.interval(0.95, len(delta) - 1, loc=np.mean(delta), scale=std)[1]
-        nodeHeap.append((-high, high, node, -1, 100))
-    heapq.heapify(nodeHeap)
 
-    for i1 in range(k):
 
-        while nodeHeap[0][3] != i1 or nodeHeap[0][4] != 10000:
-            maxOne = nodeHeap[0]
-            newSeed = S.copy()
-            newSeed.add(maxOne[2])
-            if maxOne[3] == i1:
-                thisR = Rs[maxOne[4]]
-            else:
-                thisR = 100
 
-            if thisR == 10000:
-                delta = float(0)
-                for i in range(thisR):
-                    delta = delta + model(newSeed)
-                delta = delta / thisR - preSpread
-                heapq.heapreplace(nodeHeap, (-delta, delta, maxOne[2], i1, thisR))
-            else:
-                deltas = []
-                for i in range(thisR):
-                    deltas.append(model(newSeed)-preSpread)
-                std = stats.sem(deltas)
-                if std == 0:
-                    high = deltas[0]
-                else:
-                    high = stats.t.interval(0.95, len(deltas) - 1, loc=np.mean(deltas), scale=std)[1]
-                heapq.heapreplace(nodeHeap, (-high, high, maxOne[2], i1, thisR))
-
-        winner = heapq.heappop(nodeHeap)
-        preSpread = winner[1] + preSpread
-        S.add(winner[2])
-
-    return S, preSpread
-
-def CELF_improved20(k, model, seedset):
-    # direct celf
-    global n
-    S = set()
-    R = 10000
-    nodeHeap = []
-    preSpread = 0
-    for node in seedset:
-        delta = []
-        for i in range(100):
-            delta.append(model({node}))
-        std = stats.sem(delta)
-        if std == 0:
-            high = delta[0]
-        else:
-            high = stats.t.interval(0.95, len(delta) - 1, loc=np.mean(delta), scale=std)[1]
-        nodeHeap.append((-high, high, node, -1))
-    heapq.heapify(nodeHeap)
-
-    for i1 in range(k):
-        while nodeHeap[0][3] != i1:
-            #print seedId
-            maxOne = nodeHeap[0]
-            delta = float(0)
-            newSeed = S.copy()
-            newSeed.add(maxOne[2])
-            for i in range(R):
-                delta = delta + model(newSeed)
-            delta = delta / R - preSpread
-            heapq.heapreplace(nodeHeap, (-delta, delta, maxOne[2], i1))
-
-        winner = heapq.heappop(nodeHeap)
-        preSpread = winner[1] + preSpread
-        S.add(winner[2])
-
-    return S, preSpread
 
 def CELF_improved21(k, model, seedset):
     # direct celf
@@ -521,14 +435,14 @@ if __name__ == '__main__':
     read_file(datafile)
 
     #for k in [1, 4, 10, 20, 30, 50]:
-    for k in [6, 8, 10]:
+    for k in [4, 6, 8, 10]:
         for model in [ise_IC]:
             #for model2 in [CELF_improved0]:
             #for model2 in [CELF_improved0, CELF_improved, CELF_improved2]:
-            for model2 in [CELF_improved_10, CELF_improved_11, CELF_improved_12, CELF_improved20, CELF_improved21, CELF_improved22]:
+            for model2 in [CELF_improved_10, CELF_improved_11,CELF_improved21, CELF_improved22]:
                 print model2
-                for i in range(2):
-                    start2 =time.time()
+                for i in range(3):
+                    start2 = time.time()
                     n = 0
                     # result_g = gernralGreedy(k, model)
                     # result_celf = CELF(k, model, set(graph.keys()))
@@ -538,7 +452,7 @@ if __name__ == '__main__':
                     # print "Heuristics1", Heuristics1(k, model)
                     # print "Heuristics2", Heuristics2(k, model)
                     #print "Heuristics3", Heuristics3(k, model)
-                    heuristicsCELF(k, model, model2)
+                    print heuristicsCELF(k, model, model2)
                     print n
                     print time.time()-start2
                     # print result_g[0] == result_celf[0]

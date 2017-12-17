@@ -4,7 +4,8 @@
     <list default="true" id="e786323e-511f-4305-b38e-cfaa7227381f" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/IMP.py" afterPath="$PROJECT_DIR$/src/IMP.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/ISE.py" afterPath="$PROJECT_DIR$/src/ISE.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/Compare_improve.py" afterPath="$PROJECT_DIR$/src/test/Compare_improve.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/IMP_test.py" afterPath="$PROJECT_DIR$/src/test/IMP_test.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -20,12 +21,12 @@
     <SUITE FILE_PATH="coverage/Influence_Maximization_Problem$test.coverage" NAME="test Coverage Results" MODIFIED="1513435895013" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/Influence_Maximization_Problem$test__1_.coverage" NAME="test (1) Coverage Results" MODIFIED="1513001371623" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code" />
     <SUITE FILE_PATH="coverage/Influence_Maximization_Problem$ISE__2_.coverage" NAME="ISE (2) Coverage Results" MODIFIED="1513173732827" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
-    <SUITE FILE_PATH="coverage/Influence_Maximization_Problem$IMP_test.coverage" NAME="IMP_test Coverage Results" MODIFIED="1513432937498" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/test" />
+    <SUITE FILE_PATH="coverage/Influence_Maximization_Problem$IMP_test.coverage" NAME="IMP_test Coverage Results" MODIFIED="1513486690246" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/test" />
     <SUITE FILE_PATH="coverage/Influence_Maximization_Problem$IMP_copy.coverage" NAME="IMP copy Coverage Results" MODIFIED="1513169785690" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/Influence_Maximization_Problem$IMP_test_smalldata.coverage" NAME="IMP_test_smalldata Coverage Results" MODIFIED="1513355707020" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/test" />
     <SUITE FILE_PATH="coverage/Influence_Maximization_Problem$ISE.coverage" NAME="ISE Coverage Results" MODIFIED="1513437414846" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/Influence_Maximization_Problem$IMP_test2.coverage" NAME="IMP_test2 Coverage Results" MODIFIED="1513259033647" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
-    <SUITE FILE_PATH="coverage/Influence_Maximization_Problem$IMP.coverage" NAME="IMP Coverage Results" MODIFIED="1513436208204" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
+    <SUITE FILE_PATH="coverage/Influence_Maximization_Problem$IMP.coverage" NAME="IMP Coverage Results" MODIFIED="1513485557290" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/Influence_Maximization_Problem$ISE__1_.coverage" NAME="ISE (1) Coverage Results" MODIFIED="1513005677203" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code" />
   </component>
   <component name="FileEditorManager">
@@ -45,8 +46,30 @@
       <file leaf-file-name="IMP.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/IMP.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="154">
-              <caret line="465" column="16" lean-forward="false" selection-start-line="465" selection-start-column="11" selection-end-line="465" selection-end-column="16" />
+            <state relative-caret-position="19">
+              <caret line="9" column="32" lean-forward="false" selection-start-line="9" selection-start-column="32" selection-end-line="9" selection-end-column="32" />
+              <folding>
+                <element signature="e#0#21#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Compare_improve.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/test/Compare_improve.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="152">
+              <caret line="10" column="46" lean-forward="false" selection-start-line="10" selection-start-column="46" selection-end-line="10" selection-end-column="46" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="IMP_test.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/test/IMP_test.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="54">
+              <caret line="444" column="29" lean-forward="false" selection-start-line="444" selection-start-column="29" selection-end-line="444" selection-end-column="29" />
               <folding>
                 <element signature="e#0#21#0" expanded="true" />
               </folding>
@@ -129,11 +152,11 @@
         <option value="$PROJECT_DIR$/src/test/IMP_test_smalldata.py" />
         <option value="$PROJECT_DIR$/test data/seeds2.txt" />
         <option value="$PROJECT_DIR$/src/graph.py" />
+        <option value="$PROJECT_DIR$/src/test.py" />
+        <option value="$PROJECT_DIR$/src/ISE.py" />
         <option value="$PROJECT_DIR$/src/test/IMP_test.py" />
         <option value="$PROJECT_DIR$/src/test/Compare_improve.py" />
-        <option value="$PROJECT_DIR$/src/test.py" />
         <option value="$PROJECT_DIR$/src/IMP.py" />
-        <option value="$PROJECT_DIR$/src/ISE.py" />
       </list>
     </option>
   </component>
@@ -262,7 +285,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.ISE">
+  <component name="RunManager" selected="Python.IMP_test">
     <configuration name="IMP" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -362,10 +385,10 @@
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Python.ISE" />
+        <item index="0" class="java.lang.String" itemvalue="Python.IMP_test" />
         <item index="1" class="java.lang.String" itemvalue="Python.IMP" />
-        <item index="2" class="java.lang.String" itemvalue="Python.test" />
-        <item index="3" class="java.lang.String" itemvalue="Python.IMP_test" />
+        <item index="2" class="java.lang.String" itemvalue="Python.ISE" />
+        <item index="3" class="java.lang.String" itemvalue="Python.test" />
         <item index="4" class="java.lang.String" itemvalue="Python.IMP_test_smalldata" />
       </list>
     </recent_temporary>
@@ -745,24 +768,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/test/IMP_test.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="101">
-          <caret line="523" column="14" lean-forward="false" selection-start-line="523" selection-start-column="14" selection-end-line="523" selection-end-column="14" />
-          <folding>
-            <element signature="e#0#21#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/test/Compare_improve.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
-          <caret line="17" column="32" lean-forward="true" selection-start-line="17" selection-start-column="32" selection-end-line="17" selection-end-column="32" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/test/others/benchmark_smalldata.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -799,10 +804,28 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/Compare_improve.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="152">
+          <caret line="10" column="46" lean-forward="false" selection-start-line="10" selection-start-column="46" selection-end-line="10" selection-end-column="46" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/IMP_test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="54">
+          <caret line="444" column="29" lean-forward="false" selection-start-line="444" selection-start-column="29" selection-end-line="444" selection-end-column="29" />
+          <folding>
+            <element signature="e#0#21#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/IMP.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="154">
-          <caret line="465" column="16" lean-forward="false" selection-start-line="465" selection-start-column="11" selection-end-line="465" selection-end-column="16" />
+        <state relative-caret-position="19">
+          <caret line="9" column="32" lean-forward="false" selection-start-line="9" selection-start-column="32" selection-end-line="9" selection-end-column="32" />
           <folding>
             <element signature="e#0#21#0" expanded="true" />
           </folding>
