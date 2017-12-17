@@ -6,6 +6,7 @@ from scipy import stats
 import numpy as np
 import sys
 import getopt
+from multiprocessing import Process, Queue, Pool
 
 
 def read_file(datafile):
@@ -65,7 +66,6 @@ def CELF(k, model, seedset):##
     for i1 in range(k-1):
         seedId = i1 + 2
         while nodeHeap[0][3] != seedId:
-            #print seedId
             maxOne = nodeHeap[0]
             delta = float(0)
             newSeed = S.copy()
@@ -92,6 +92,22 @@ def Heuristics(k):
         h[node] = 0
         for neighbor, weight in graph.neighbor(node):
             h[node] += weight*outdegree[neighbor]
+    h = sorted(h.items(), key=lambda e: e[1], reverse=True)
+    for i in range(k):
+        S.add(h[i][0])
+    return S
+
+
+def Heuristics_improved(k):
+    outdegree = {}
+    h = {}
+    S = set()
+    for node in graph.keys():
+        outdegree[node] = graph.outdegree(node)
+    for node in graph.keys():
+        h[node] = 0
+        for neighbor, weight in graph.neighbor(node):
+            h[node] += weight*outdegree[neighbor]
 
     for i in range(k):
         winner = max(h, key=h.get)
@@ -101,12 +117,11 @@ def Heuristics(k):
             if neighbor in h:
                 union = len(set(graph.neighbor_node(winner)).intersection(set(graph.neighbor_node(neighbor))))
                 h[neighbor] = (1-weight)*(h[neighbor]-union)
-
     return S
 
 
 def heuristics_CELF_improved(k, model, model2):
-    num_seed = 4*k
+    num_seed = 8*k
     if num_seed > n_nodes:
         num_seed = n_nodes
     seedset = Heuristics(num_seed)
@@ -114,20 +129,22 @@ def heuristics_CELF_improved(k, model, model2):
 
 
 def CELF_improved_10(k, model, seedset):
+    global p, q_in, q_out
     global n
     S = set()
     Rs = {100: 1000, 1000: 10000}
     nodeHeap = []
     preSpread = 0
     for node in seedset:
-        delta = []
-        for i in range(100):
-            delta.append(model({node}))
-        std = stats.sem(delta)
-        if std == 0:
-            high = delta[0]
-        else:
-            high = stats.t.interval(0.95, len(delta) - 1, loc=np.mean(delta), scale=std)[1]
+        for qin in q_in:
+            qin.put(False)
+            qin.put(100/7)
+            qin.put({node})
+            qin.put(preSpread)
+        result = []
+        for qout in q_out:
+            result.append(qout.get(True))
+        high = sum(result) / len(result)
         nodeHeap.append((-high, high, node, -1, 100))
     heapq.heapify(nodeHeap)
 
@@ -143,20 +160,26 @@ def CELF_improved_10(k, model, seedset):
                 thisR = 100
 
             if thisR == 10000:
-                delta = float(0)
-                for i in range(thisR):
-                    delta = delta + model(newSeed)
-                delta = delta / thisR - preSpread
+                for qin in q_in:
+                    qin.put(True)
+                    qin.put(10000 / 7)
+                    qin.put(newSeed)
+                    qin.put(preSpread)
+                result = []
+                for qout in q_out:
+                    result.append(qout.get(True))
+                delta = sum(result) / len(result)
                 heapq.heapreplace(nodeHeap, (-delta, delta, maxOne[2], i1, thisR))
             else:
-                deltas = []
-                for i in range(thisR):
-                    deltas.append(model(newSeed)-preSpread)
-                std = stats.sem(deltas)
-                if std == 0:
-                    high = deltas[0]
-                else:
-                    high = stats.t.interval(0.95, len(deltas) - 1, loc=np.mean(deltas), scale=std)[1]
+                for qin in q_in:
+                    qin.put(False)
+                    qin.put(thisR / 7)
+                    qin.put(newSeed)
+                    qin.put(preSpread)
+                result = []
+                for qout in q_out:
+                    result.append(qout.get(True))
+                high = sum(result) / len(result)
                 heapq.heapreplace(nodeHeap, (-high, high, maxOne[2], i1, thisR))
 
         winner = heapq.heappop(nodeHeap)
@@ -187,7 +210,6 @@ def CELF_improved21(k, model, seedset):
 
     for i1 in range(k):
         while nodeHeap[0][3] != i1:
-            #print seedId
             maxOne = nodeHeap[0]
             delta = float(0)
             newSeed = S.copy()
@@ -225,7 +247,6 @@ def CELF_improved22(k, model, seedset):
 
     for i1 in range(k):
         while nodeHeap[0][3] != i1:
-            #print seedId
             maxOne = nodeHeap[0]
             delta = float(0)
             newSeed = S.copy()
@@ -242,23 +263,48 @@ def CELF_improved22(k, model, seedset):
     return S
 
 
-def ise(times, model, seedset, preSpread=0):
+def ise(random_seed, model, q_in, q_out):
     '''
     Influence spread estimation
     :param times: the run times
     :param model: The diffusion model: IC or LT
     :return: the average influence spread
     '''
-    if times == 10000:
-        sum = float(0)
-        for i in range(times):
-            sum = sum + model(seedset)
-        return sum/times - preSpread
-    else:
-        delta = []
-        for i in range(times):
-            delta.append(model(seedset) - preSpread)
-        return delta
+    random.seed(random_seed)
+    while True:
+        Accurate = q_in.get(True)
+        times = q_in.get(True)
+        seedset = q_in.get(True)
+        preSpread = q_in.get(True)
+
+        if Accurate is True:
+            tem = []
+            for i in range(times):
+                tem.append(model(seedset))
+            q_out.put(float(sum(tem)) / times - preSpread)
+        else:
+            delta = []
+            for i in range(times):
+                delta.append(model(seedset) - preSpread)
+            std = stats.sem(delta)
+            if std == 0:
+                high = delta[0]
+            else:
+                high = stats.t.interval(0.95, len(delta) - 1, loc=np.mean(delta), scale=std)[1]
+            q_out.put(high)
+
+
+def ise_finalresult(model, seedset):
+    '''
+    Influence spread estimation
+    :param times: the run times
+    :param model: The diffusion model: IC or LT
+    :return: the average influence spread
+    '''
+    tem = []
+    for i in range(10000):
+        tem.append(model(seedset))
+    return float(sum(tem)) / 10000
 
 
 
@@ -341,39 +387,50 @@ if __name__ == '__main__':
     #     elif opt == '-r':
     #         random_seed = float(val)
 
-    datafile = "../test data/network.txt"
-    k = 10
-    model_type = 'LT'
+    datafile = "../test data/NetHEPT.txt"
+    k = 4
+    model_type = 'IC'
     termination_type = 0
     runTime = 0
     random_seed = 123
 
-    random.seed(random_seed)
     if model_type == 'IC':
         thismodel = IC
     elif model_type == 'LT':
         thismodel = LT
+    random.seed(random_seed)
     read_file(datafile)
 
-    result = heuristics_CELF_improved(k, thismodel, CELF_improved_10)
-    # result_alt = CELF(k, IC)
+    q_in = []
+    q_out =[]
+    p = []
+    n = 7
+    for i in range(n):
+        q_in.append(Queue())
+        q_out.append(Queue())
+        p.append(Process(target=ise, args=(random_seed, thismodel, q_in[i], q_out[i])))
+        p[i].start()
+
+    result_seed = heuristics_CELF_improved(k, thismodel, CELF_improved_10)
+    for sub in p:
+        sub.terminate()
 
 
     # If not enough time
-    res = k-len(result)
+    res = k-len(result_seed)
     if res != 0:
         print "not enough!"##
-        for node in result:
+        for node in result_seed:
             graph.del_node(node)
-        res_seed = Heuristics(res)
-        for s in result:
+        res_seed = Heuristics_improved(res)
+        for s in result_seed:
             print s
         for s in res_seed:
             print s
-        print ise(10000, thismodel, result+res_seed)##
+        print ise_finalresult(thismodel, result_seed)##
     else:
-        for s in result:
+        for s in result_seed:
             print s
-        print ise(10000, thismodel, result)##
+        print ise_finalresult(thismodel, result_seed)##
 
     print time.time() - start

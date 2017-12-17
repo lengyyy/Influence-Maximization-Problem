@@ -4,7 +4,7 @@ import time
 import numpy as np
 import getopt
 import sys
-from multiprocessing import Process, Queue, Pool
+from multiprocessing import Process, Queue
 
 
 def read_file(datafile, seedfile):
@@ -26,17 +26,18 @@ def read_file(datafile, seedfile):
         seedlist.append(int(i))
 
 
-def ise (q, times, model):
+def ise (q, times, model, random_seed):
     '''
     Influence spread estimation
     :param times: the run times
     :param model: The diffusion model: IC or LT
     :return: the average influence spread
     '''
+    random.seed(random_seed)
     tem = []
     for i in range(times):
         tem.append(model())
-    q.put(float(sum(tem))/len(tem))
+    q.put(float(sum(tem))/times)
 
 def IC():
     '''
@@ -126,17 +127,16 @@ if __name__ == '__main__':
         thismodel = IC
     elif model_type == 'LT':
         thismodel = LT
-    random.seed(random_seed)
     read_file(datafile, seedfile)
 
     q = []
     p = []
     r = 10000
-    n = 8
+    n = 7
     print time.time()-start
     for i in range(n):
         q.append(Queue())
-        p.append(Process(target=ise, args=(q[i], r/n, thismodel,)))
+        p.append(Process(target=ise, args=(q[i], r/n, thismodel, random_seed+i)))
         p[i].start()
 
     for sub in p:
@@ -147,10 +147,7 @@ if __name__ == '__main__':
     for subq in q:
         result.append(subq.get())
     print result
-    print int(sum(result)/len(result))
+    print sum(result)/len(result)
 
-    # q = Queue()
-    # ise(q,10000,thismodel)
-    # print q.get()
 
     print time.time() - start

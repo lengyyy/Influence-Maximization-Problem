@@ -44,7 +44,7 @@ class Graph(dict):
 
     def del_node(self, source):
         """Remove a node from the graph (with edges)."""
-        for target in self.interkeys():
+        for target in self.keys():
             if source in self[target]:
                 del self[target][source]
         del self[source]
