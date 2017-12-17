@@ -1,4 +1,3 @@
-from edge import Edge
 from graph import Graph
 import random
 import time
@@ -21,8 +20,7 @@ def read_file(datafile):
     n_edges = int(lines[0].split()[1])
     for i in lines[1:]:
         thisline = i.split()
-        edge = Edge(int(thisline[0]), int(thisline[1]), float(thisline[2]))
-        graph.add_edge(edge)
+        graph.add_edge(int(thisline[0]), int(thisline[1]), float(thisline[2]))
 
 
 def gernralGreedy(k, model):
@@ -46,7 +44,8 @@ def gernralGreedy(k, model):
     return S, addnode[0][0]
 
 
-def CELF(k, model, seedset=graph.keys()):##
+def CELF(k, model, seedset):##
+    seedset = graph.keys()
     global n
     S = set()
     R = 10000
@@ -91,20 +90,17 @@ def Heuristics(k):
         outdegree[node] = graph.outdegree(node)
     for node in graph.keys():
         h[node] = 0
-        for e in graph.iteroutedges(node):
-            neighbor = e.target
-            h[node] += e.weight*outdegree[neighbor]
+        for neighbor, weight in graph.neighbor(node):
+            h[node] += weight*outdegree[neighbor]
 
     for i in range(k):
         winner = max(h, key=h.get)
         h.pop(winner)
         S.add(winner)
-        neighbor_winner = graph.neighbor(winner)
-        for e in graph.iteroutedges(winner):
-            neighbor = e.target
+        for neighbor, weight in graph.neighbor(winner):
             if neighbor in h:
-                union = len(set(neighbor_winner).intersection(set(graph.neighbor(neighbor))))
-                h[neighbor] = (1-e.weight)*(h[neighbor]-union)
+                union = len(set(graph.neighbor_node(winner)).intersection(set(graph.neighbor_node(neighbor))))
+                h[neighbor] = (1-weight)*(h[neighbor]-union)
 
     return S
 
@@ -280,10 +276,9 @@ def IC(seedset):
     while ActivitySet:
         newActivitySet = []
         for seed in ActivitySet:
-            for edge in graph.iteroutedges(seed):
-                neighbor = edge.target
+            for neighbor, weight in graph.neighbor(seed):
                 if neighbor not in nodeActived:
-                    if random.random() < edge.weight:
+                    if random.random() < weight:
                         nodeActived.add(neighbor)
                         newActivitySet.append(neighbor)
         count = count + len(newActivitySet)
@@ -307,13 +302,12 @@ def LT(seedset):
     while ActivitySet:
         newActivitySet = []
         for seed in ActivitySet:
-            for edge in graph.iteroutedges(seed):
-                neighbor = edge.target
+            for neighbor, weight in graph.neighbor(seed):
                 if neighbor not in nodeActived:
                     if neighbor not in nodeThreshold:
                         nodeThreshold[neighbor] = random.random()
                         weights[neighbor] = 0
-                    weights[neighbor] = weights[neighbor] + edge.weight
+                    weights[neighbor] = weights[neighbor] + weight
                     if weights[neighbor] >= nodeThreshold[neighbor]:
                         nodeActived.add(neighbor)
                         newActivitySet.append(neighbor)
@@ -332,32 +326,38 @@ if __name__ == '__main__':
     n = 0##
 
     # read the arguments from termination
-    opts, args = getopt.getopt(sys.argv[1:], 'i:k:m:b:t:r:')
-    for (opt, val) in opts:
-        if opt == '-i':
-            datafile = val
-        elif opt == '-k':
-            k = int(val)
-        elif opt == '-m':
-            model_type = val
-        elif opt == '-b':
-            termination_type = int(val)
-        elif opt == '-t':
-            runTime = float(val)
-        elif opt == '-r':
-            random_seed = float(val)
+    # opts, args = getopt.getopt(sys.argv[1:], 'i:k:m:b:t:r:')
+    # for (opt, val) in opts:
+    #     if opt == '-i':
+    #         datafile = val
+    #     elif opt == '-k':
+    #         k = int(val)
+    #     elif opt == '-m':
+    #         model_type = val
+    #     elif opt == '-b':
+    #         termination_type = int(val)
+    #     elif opt == '-t':
+    #         runTime = float(val)
+    #     elif opt == '-r':
+    #         random_seed = float(val)
 
-    # datafile = "../test data/network.txt"
-    # k = 4
-    # model_type = 'IC'
-    # termination_type = 0
-    # runTime = 0
-    # randomSeed = 123
+    datafile = "../test data/network.txt"
+    k = 10
+    model_type = 'LT'
+    termination_type = 0
+    runTime = 0
+    random_seed = 123
 
     random.seed(random_seed)
+    if model_type == 'IC':
+        thismodel = IC
+    elif model_type == 'LT':
+        thismodel = LT
     read_file(datafile)
-    result = heuristics_CELF_improved(k, model_type)
-    #result_alt = CELF(k, model_type)
+
+    result = heuristics_CELF_improved(k, thismodel, CELF_improved_10)
+    # result_alt = CELF(k, IC)
+
 
     # If not enough time
     res = k-len(result)
@@ -370,10 +370,10 @@ if __name__ == '__main__':
             print s
         for s in res_seed:
             print s
-        print ise(10000, model_type, result+res_seed)##
+        print ise(10000, thismodel, result+res_seed)##
     else:
         for s in result:
             print s
-        print ise(10000, model_type, result)##
+        print ise(10000, thismodel, result)##
 
     print time.time() - start

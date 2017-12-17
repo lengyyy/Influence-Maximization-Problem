@@ -1,22 +1,19 @@
-import edge
 
 
 class Graph(dict):
     """
         An exemplary graph structure:
-        {"A": {"B": Edge("A", "B", 1), "C": Edge("A", "C", 2)},
-        "B": {"C": Edge("B", "C", 3), "D": Edge("B", "D", 4)},
-        "C": {"D": Edge("C", "D", 5)},
-        "D": {"C": Edge("D", "C", 6)},
-        "E": {"C": Edge("E", "C", 7)},
-        "F": {}}
+        {"A": {"B":1, "C": 2},
+        "B": {"C": 3, "D": 4)},
+        "C": {"D": 5},
+        "D": {}}
         """
     def __init__(self):
         pass
 
     def v(self):
         """Return the number of nodes (the graph order)."""
-        num=len(self)
+        num = len(self)
         return num
 
     def e(self):
@@ -29,72 +26,30 @@ class Graph(dict):
         if node not in self:
             self[node] = dict()
 
-    def add_edge(self, edge):
+    def add_edge(self, source, target, weight):
         """Add an edge to the graph (missing nodes are created)."""
-        self.add_node(edge.source)
-        self.add_node(edge.target)
-        self[edge.source][edge.target] = edge
-
-    def iternodes(self):
-        """Generate all nodes from the graph on demand."""
-        return self.iterkeys()
-
-    def iteredges(self):
-        """Generate all edges from the graph on demand."""
-        for source in self.iternodes():
-            for target in self[source]:
-                yield self[source][target]
-
-    def iteradjacent(self, source):
-        """Generate the adjacent nodes from the graph on demand."""
-        return self[source].iterkeys()
-
-    def iteroutedges(self, source):
-        """Generate the outedges from the graph on demand."""
-        for target in self[source]:
-            yield self[source][target]
-
-    def iterinedges(self, source):
-        """Generate the inedges from the graph on demand."""
-        for target in self.iternodes():
-            if source in self[target]:
-                yield self[target][source]
+        self.add_node(source)
+        self.add_node(target)
+        self[source][target] = weight
 
     def outdegree(self, source):
         """Return the outdegree of the node."""
         return len(self[source])
 
-    def indegree(self, source):
-        """Return the indegree of the node."""
-        counter = 0
-        for target in self.iternodes():
-            if source in self[target]:
-                counter += 1
-        return counter
-
     def neighbor(self,source):
+        return self[source].items()
+
+    def neighbor_node(self,source):
         return self[source].keys()
 
-    def del_node(self, node):
+    def del_node(self, source):
         """Remove a node from the graph (with edges)."""
-        # The dictionary changes size during iteration.
-        for edge in list(self.iterinedges(node)):
-            self.del_edge(edge)
-        for edge in list(self.iteroutedges(node)):
-            self.del_edge(edge)
-        del self[node]
+        for target in self.interkeys():
+            if source in self[target]:
+                del self[target][source]
+        del self[source]
 
-    def del_edge(self, edge):
-        """Remove an edge from the graph."""
-        del self[edge.source][edge.target]
 
-    def show(self):
-        """The graph presentation."""
-        for source in self.iternodes():
-            print(source, ":")
-            for edge in self.iteroutedges(source):
-                print("%s(%s)" % (edge.target, edge.weight))
-            print()
 
 
 

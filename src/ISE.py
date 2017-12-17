@@ -1,9 +1,10 @@
-from edge import Edge
 from graph import Graph
 import random
 import time
+import numpy as np
 import getopt
 import sys
+from multiprocessing import Process, Queue, Pool
 
 
 def read_file(datafile, seedfile):
@@ -18,26 +19,24 @@ def read_file(datafile, seedfile):
     n_edges = lines[0].split()[1]
     for i in lines[1:]:
         thisline = i.split()
-        edge = Edge(int(thisline[0]), int(thisline[1]), float(thisline[2]))
-        graph.add_edge(edge)
+        graph.add_edge(int(thisline[0]), int(thisline[1]), float(thisline[2]))
 
     lines2 = open(seedfile).readlines()
     for i in lines2:
         seedlist.append(int(i))
 
 
-def ise (times, model):
+def ise (q, times, model):
     '''
     Influence spread estimation
     :param times: the run times
     :param model: The diffusion model: IC or LT
     :return: the average influence spread
     '''
-    sum = float(0)
+    tem = []
     for i in range(times):
-        sum = sum + model()
-    return sum/times
-
+        tem.append(model())
+    q.put(float(sum(tem))/len(tem))
 
 def IC():
     '''
@@ -51,10 +50,8 @@ def IC():
     while ActivitySet:
         newActivitySet = []
         for seed in ActivitySet:
-            for edge in graph.iteroutedges(seed):
-                neighbor = edge.target
+            for neighbor, weight in graph.neighbor(seed):
                 if neighbor not in nodeActived:
-                    weight = edge.weight
                     if random.random() < weight:
                         nodeActived.add(neighbor)
                         newActivitySet.append(neighbor)
@@ -77,13 +74,12 @@ def LT():
     while ActivitySet:
         newActivitySet = []
         for seed in ActivitySet:
-            for edge in graph.iteroutedges(seed):
-                neighbor = edge.target
+            for neighbor, weight in graph.neighbor(seed):
                 if neighbor not in nodeActived:
                     if neighbor not in nodeThreshold:
                         nodeThreshold[neighbor] = random.random()
                         weights[neighbor] = 0
-                    weights[neighbor] = weights[neighbor] + edge.weight
+                    weights[neighbor] = weights[neighbor] + weight
                     if weights[neighbor] >= nodeThreshold[neighbor]:
                         nodeActived.add(neighbor)
                         newActivitySet.append(neighbor)
@@ -103,32 +99,58 @@ if __name__ == '__main__':
     seedlist = []
 
     # read the arguments from termination
-    opts, args = getopt.getopt(sys.argv[1:], 'i:s:m:b:t:r:')
-    for (opt, val) in opts:
-        if opt == '-i':
-            datafile = val
-        elif opt == '-s':
-            seedfile = val
-        elif opt == '-m':
-            model_type = val
-        elif opt == '-b':
-            termination_type = int(val)
-        elif opt == '-t':
-            runTime = float(val)
-        elif opt == '-r':
-            random_seed = float(val)
-    print datafile,seedfile,model_type,termination_type,runTime,random_seed
-    quit()
+    # opts, args = getopt.getopt(sys.argv[1:], 'i:s:m:b:t:r:')
+    # for (opt, val) in opts:
+    #     if opt == '-i':
+    #         datafile = val
+    #     elif opt == '-s':
+    #         seedfile = val
+    #     elif opt == '-m':
+    #         model_type = val
+    #     elif opt == '-b':
+    #         termination_type = int(val)
+    #     elif opt == '-t':
+    #         runTime = float(val)
+    #     elif opt == '-r':
+    #         random_seed = float(val)
 
 
-    # datafile = "../test data/NetHEPT.txt"
-    # seedfile = "../test data/seeds2.txt"
-    # model_type = 'IC'
-    # termination_type = 0
-    # runTime = 0
-    # randomSeed = 123
+    datafile = "../test data/NetHEPT.txt"
+    seedfile = "../test data/seeds2.txt"
+    model_type = 'IC'
+    termination_type = 0
+    runTime = 0
+    random_seed = 123
 
+    if model_type == 'IC':
+        thismodel = IC
+    elif model_type == 'LT':
+        thismodel = LT
     random.seed(random_seed)
     read_file(datafile, seedfile)
-    print ise(10000, model_type)
+
+    q = []
+    p = []
+    r = 10000
+    n = 8
+    print time.time()-start
+    for i in range(n):
+        q.append(Queue())
+        p.append(Process(target=ise, args=(q[i], r/n, thismodel,)))
+        p[i].start()
+
+    for sub in p:
+        sub.join()
+
+
+    result = []
+    for subq in q:
+        result.append(subq.get())
+    print result
+    print int(sum(result)/len(result))
+
+    # q = Queue()
+    # ise(q,10000,thismodel)
+    # print q.get()
+
     print time.time() - start
