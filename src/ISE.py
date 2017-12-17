@@ -2,21 +2,8 @@ from edge import Edge
 from graph import Graph
 import random
 import time
-from Queue import Queue
-
-# Arguments from commend line
-datafile = "../test data/NetHEPT.txt"
-seedfile = "../test data/seeds2.txt"
-model = 'IC'
-termination_type = 0
-runTime = 0
-randomSeed = 123
-
-# Global variables
-n_nodes = 0
-n_edges = 0
-graph = Graph()
-seedlist = []
+import getopt
+import sys
 
 
 def read_file(datafile, seedfile):
@@ -52,7 +39,6 @@ def ise (times, model):
     return sum/times
 
 
-
 def IC():
     '''
     Ise based on Independent Cascade model
@@ -75,6 +61,7 @@ def IC():
         count=count+len(newActivitySet)
         ActivitySet = newActivitySet
     return count
+
 
 def LT():
     '''
@@ -108,12 +95,40 @@ def LT():
 
 if __name__ == '__main__':
     start = time.time()
-    random.seed()
-    read_file(datafile, seedfile)
-    print n_nodes
-    print n_edges
-    print seedlist
 
-    for model in [LT]:
-        print ise(10000, model)
+    # Global variables
+    n_nodes = 0
+    n_edges = 0
+    graph = Graph()
+    seedlist = []
+
+    # read the arguments from termination
+    opts, args = getopt.getopt(sys.argv[1:], 'i:s:m:b:t:r:')
+    for (opt, val) in opts:
+        if opt == '-i':
+            datafile = val
+        elif opt == '-s':
+            seedfile = val
+        elif opt == '-m':
+            model_type = val
+        elif opt == '-b':
+            termination_type = int(val)
+        elif opt == '-t':
+            runTime = float(val)
+        elif opt == '-r':
+            random_seed = float(val)
+    print datafile,seedfile,model_type,termination_type,runTime,random_seed
+    quit()
+
+
+    # datafile = "../test data/NetHEPT.txt"
+    # seedfile = "../test data/seeds2.txt"
+    # model_type = 'IC'
+    # termination_type = 0
+    # runTime = 0
+    # randomSeed = 123
+
+    random.seed(random_seed)
+    read_file(datafile, seedfile)
+    print ise(10000, model_type)
     print time.time() - start

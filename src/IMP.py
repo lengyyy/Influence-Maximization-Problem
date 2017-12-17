@@ -5,21 +5,8 @@ import time
 import heapq
 from scipy import stats
 import numpy as np
-
-# Arguments from commend line
-datafile = "../test data/network.txt"
-k = 4
-model_type = 'IC'
-termination_type = 0
-runTime = 0
-randomSeed = 123
-
-# Global variables
-n_nodes = 0
-n_edges = 0
-graph = Graph()
-outdegree = {}
-n = 0
+import sys
+import getopt
 
 
 def read_file(datafile):
@@ -59,15 +46,7 @@ def gernralGreedy(k, model):
     return S, addnode[0][0]
 
 
-def heuristicsCELF(k, model, model2):
-    num_seed = 4*k
-    if num_seed > n_nodes:
-        num_seed = n_nodes
-    seedset = Heuristics(num_seed)
-    return model2(k, model, seedset)
-
-
-def CELF(k, model, seedset):
+def CELF(k, model, seedset=graph.keys()):##
     global n
     S = set()
     R = 10000
@@ -102,6 +81,40 @@ def CELF(k, model, seedset):
         S.add(winner[2])
 
     return S, preSpread
+
+
+def Heuristics(k):
+    outdegree = {}
+    h = {}
+    S = set()
+    for node in graph.keys():
+        outdegree[node] = graph.outdegree(node)
+    for node in graph.keys():
+        h[node] = 0
+        for e in graph.iteroutedges(node):
+            neighbor = e.target
+            h[node] += e.weight*outdegree[neighbor]
+
+    for i in range(k):
+        winner = max(h, key=h.get)
+        h.pop(winner)
+        S.add(winner)
+        neighbor_winner = graph.neighbor(winner)
+        for e in graph.iteroutedges(winner):
+            neighbor = e.target
+            if neighbor in h:
+                union = len(set(neighbor_winner).intersection(set(graph.neighbor(neighbor))))
+                h[neighbor] = (1-e.weight)*(h[neighbor]-union)
+
+    return S
+
+
+def heuristics_CELF_improved(k, model, model2):
+    num_seed = 4*k
+    if num_seed > n_nodes:
+        num_seed = n_nodes
+    seedset = Heuristics(num_seed)
+    return model2(k, model, seedset)
 
 
 def CELF_improved_10(k, model, seedset):
@@ -154,8 +167,7 @@ def CELF_improved_10(k, model, seedset):
         preSpread = winner[1] + preSpread
         S.add(winner[2])
 
-    return S, preSpread
-
+    return S
 
 
 def CELF_improved_11(k, model, seedset):
@@ -209,98 +221,8 @@ def CELF_improved_11(k, model, seedset):
         preSpread = winner[1] + preSpread
         S.add(winner[2])
 
-    return S, preSpread
+    return S
 
-
-def CELF_improved_12(k, model, seedset):
-    # right slow
-    global n
-    S = set()
-    Rs = {100: 5000, 5000: 10000}
-    nodeHeap = []
-    preSpread = 0
-    for node in seedset:
-        delta = []
-        for i in range(100):
-            delta.append(model({node}))
-        std = stats.sem(delta)
-        if std == 0:
-            high = delta[0]
-        else:
-            high = stats.t.interval(0.95, len(delta) - 1, loc=np.mean(delta), scale=std)[1]
-        nodeHeap.append((-high, high, node, -1, 100))
-    heapq.heapify(nodeHeap)
-
-    for i1 in range(k):
-
-        while nodeHeap[0][3] != i1 or nodeHeap[0][4] != 10000:
-            maxOne = nodeHeap[0]
-            newSeed = S.copy()
-            newSeed.add(maxOne[2])
-            if maxOne[3] == i1:
-                thisR = Rs[maxOne[4]]
-            else:
-                thisR = 100
-
-            if thisR == 10000:
-                delta = float(0)
-                for i in range(thisR):
-                    delta = delta + model(newSeed)
-                delta = delta / thisR - preSpread
-                heapq.heapreplace(nodeHeap, (-delta, delta, maxOne[2], i1, thisR))
-            else:
-                deltas = []
-                for i in range(thisR):
-                    deltas.append(model(newSeed)-preSpread)
-                std = stats.sem(deltas)
-                if std == 0:
-                    high = deltas[0]
-                else:
-                    high = stats.t.interval(0.95, len(deltas) - 1, loc=np.mean(deltas), scale=std)[1]
-                heapq.heapreplace(nodeHeap, (-high, high, maxOne[2], i1, thisR))
-
-        winner = heapq.heappop(nodeHeap)
-        preSpread = winner[1] + preSpread
-        S.add(winner[2])
-
-    return S, preSpread
-
-def CELF_improved20(k, model, seedset):
-    # direct celf
-    global n
-    S = set()
-    R = 10000
-    nodeHeap = []
-    preSpread = 0
-    for node in seedset:
-        delta = []
-        for i in range(100):
-            delta.append(model({node}))
-        std = stats.sem(delta)
-        if std == 0:
-            high = delta[0]
-        else:
-            high = stats.t.interval(0.95, len(delta) - 1, loc=np.mean(delta), scale=std)[1]
-        nodeHeap.append((-high, high, node, -1))
-    heapq.heapify(nodeHeap)
-
-    for i1 in range(k):
-        while nodeHeap[0][3] != i1:
-            #print seedId
-            maxOne = nodeHeap[0]
-            delta = float(0)
-            newSeed = S.copy()
-            newSeed.add(maxOne[2])
-            for i in range(R):
-                delta = delta + model(newSeed)
-            delta = delta / R - preSpread
-            heapq.heapreplace(nodeHeap, (-delta, delta, maxOne[2], i1))
-
-        winner = heapq.heappop(nodeHeap)
-        preSpread = winner[1] + preSpread
-        S.add(winner[2])
-
-    return S, preSpread
 
 def CELF_improved21(k, model, seedset):
     # direct celf
@@ -337,7 +259,8 @@ def CELF_improved21(k, model, seedset):
         preSpread = winner[1] + preSpread
         S.add(winner[2])
 
-    return S, preSpread
+    return S
+
 
 def CELF_improved22(k, model, seedset):
     # direct celf
@@ -374,43 +297,30 @@ def CELF_improved22(k, model, seedset):
         preSpread = winner[1] + preSpread
         S.add(winner[2])
 
-    return S, preSpread
-
-
-def Heuristics(k):
-    global outdegree
-    h = {}
-    S = set()
-    # R = 10000
-    for node in graph.keys():
-        outdegree[node] = graph.outdegree(node)
-    for node in graph.keys():
-        h[node] = 0
-        for e in graph.iteroutedges(node):
-            neighbor = e.target
-            h[node] += e.weight*outdegree[neighbor]
-
-    for i in range(k):
-        winner = max(h, key=h.get)
-        h.pop(winner)
-        S.add(winner)
-        neighbor_winner = graph.neighbor(winner)
-        for e in graph.iteroutedges(winner):
-            neighbor = e.target
-            if neighbor in h:
-                union = len(set(neighbor_winner).intersection(set(graph.neighbor(neighbor))))
-                h[neighbor] = (1-e.weight)*(h[neighbor]-union)
-
-    # spread = float(0)
-    # for i in range(R):
-    #     spread = spread + model(S)
-    # print spread/R
-
-    #return S, spread/R
     return S
 
 
-def ise_IC(seedset):
+def ise(times, model, seedset, preSpread=0):
+    '''
+    Influence spread estimation
+    :param times: the run times
+    :param model: The diffusion model: IC or LT
+    :return: the average influence spread
+    '''
+    if times == 10000:
+        sum = float(0)
+        for i in range(times):
+            sum = sum + model(seedset)
+        return sum/times - preSpread
+    else:
+        delta = []
+        for i in range(times):
+            delta.append(model(seedset) - preSpread)
+        return delta
+
+
+
+def IC(seedset):
     '''
     Ise based on Independent Cascade model
     :return: the influence spread
@@ -435,7 +345,7 @@ def ise_IC(seedset):
     return count
 
 
-def ise_LT(seedset):
+def LT(seedset):
     '''
     ISE based on linear threshold model
     :return: the influence spread
@@ -468,52 +378,56 @@ def ise_LT(seedset):
 
 if __name__ == '__main__':
     start = time.time()
-    random.seed()
+
+    # Global variables
+    n_nodes = 0
+    n_edges = 0
+    graph = Graph()
+    n = 0##
+
+    # read the arguments from termination
+    opts, args = getopt.getopt(sys.argv[1:], 'i:k:m:b:t:r:')
+    for (opt, val) in opts:
+        if opt == '-i':
+            datafile = val
+        elif opt == '-k':
+            k = int(val)
+        elif opt == '-m':
+            model_type = val
+        elif opt == '-b':
+            termination_type = int(val)
+        elif opt == '-t':
+            runTime = float(val)
+        elif opt == '-r':
+            random_seed = float(val)
+
+    # datafile = "../test data/network.txt"
+    # k = 4
+    # model_type = 'IC'
+    # termination_type = 0
+    # runTime = 0
+    # randomSeed = 123
+
+    random.seed(random_seed)
     read_file(datafile)
+    result = heuristics_CELF_improved(k, model_type)
+    #result_alt = CELF(k, model_type)
 
-    #for k in [1, 4, 10, 20, 30, 50]:
-    for k in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50]:
-        for model in [ise_IC, ise_LT]:
-            #for model2 in [CELF_improved0]:
-            #for model2 in [CELF_improved0, CELF_improved, CELF_improved2]:
-            for model2 in [CELF_improved_10]:
-                for i in range(1):
-                    start2 =time.time()
-                    n = 0
-                    # result_g = gernralGreedy(k, model)
-                    # result_celf = CELF(k, model, set(graph.keys()))
-                    # print "greedy",result_g
-                    # print "celf", result_celf
-                    # print "Heuristics0",Heuristics0(k, model)
-                    # print "Heuristics1", Heuristics1(k, model)
-                    # print "Heuristics2", Heuristics2(k, model)
-                    # print "Heuristics3", Heuristics3(k, model)
-                    print model2, heuristicsCELF(k, model, model2)
-
-
-
-                    # If no enough time
-
-                    # result = heuristicsCELF(k, model, model2)
-                    # result_seed = result[0]
-                    # res = k-len(result_seed)
-                    # if res != 0:
-                    #     for node in result_seed:
-                    #         graph.del_node(node)
-                    #     res_seed = Heuristics(res)
-                    #     print result_seed
-                    #     print res_seed
-                    # else:
-                    #     print res_seed
-
-
-
-
-                    print n
-                    print time.time()-start2
-                    # print result_g[0] == result_celf[0]
-                    print
-
-        print "--------------------------------"
+    # If not enough time
+    res = k-len(result)
+    if res != 0:
+        print "not enough!"##
+        for node in result:
+            graph.del_node(node)
+        res_seed = Heuristics(res)
+        for s in result:
+            print s
+        for s in res_seed:
+            print s
+        print ise(10000, model_type, result+res_seed)##
+    else:
+        for s in result:
+            print s
+        print ise(10000, model_type, result)##
 
     print time.time() - start
