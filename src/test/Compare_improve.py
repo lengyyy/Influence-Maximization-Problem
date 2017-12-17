@@ -8,7 +8,7 @@ NUMBER_RUN = 1
 
 for i in range(NUMBER_RUN):
     seed = str(time.time())
-    out_file = open('./output/compare_improve2.txt', 'a')
+    out_file = open('./output/compare_improve3.txt', 'a')
     # print(dir_path)
     command = ['python2', 'IMP_test.py']
     process = subprocess.Popen(command, stdout=out_file)

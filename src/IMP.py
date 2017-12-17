@@ -170,60 +170,6 @@ def CELF_improved_10(k, model, seedset):
     return S
 
 
-def CELF_improved_11(k, model, seedset):
-    # right slow
-    global n
-    S = set()
-    Rs = {100: 3000, 3000: 10000}
-    nodeHeap = []
-    preSpread = 0
-    for node in seedset:
-        delta = []
-        for i in range(100):
-            delta.append(model({node}))
-        std = stats.sem(delta)
-        if std == 0:
-            high = delta[0]
-        else:
-            high = stats.t.interval(0.95, len(delta) - 1, loc=np.mean(delta), scale=std)[1]
-        nodeHeap.append((-high, high, node, -1, 100))
-    heapq.heapify(nodeHeap)
-
-    for i1 in range(k):
-
-        while nodeHeap[0][3] != i1 or nodeHeap[0][4] != 10000:
-            maxOne = nodeHeap[0]
-            newSeed = S.copy()
-            newSeed.add(maxOne[2])
-            if maxOne[3] == i1:
-                thisR = Rs[maxOne[4]]
-            else:
-                thisR = 100
-
-            if thisR == 10000:
-                delta = float(0)
-                for i in range(thisR):
-                    delta = delta + model(newSeed)
-                delta = delta / thisR - preSpread
-                heapq.heapreplace(nodeHeap, (-delta, delta, maxOne[2], i1, thisR))
-            else:
-                deltas = []
-                for i in range(thisR):
-                    deltas.append(model(newSeed)-preSpread)
-                std = stats.sem(deltas)
-                if std == 0:
-                    high = deltas[0]
-                else:
-                    high = stats.t.interval(0.95, len(deltas) - 1, loc=np.mean(deltas), scale=std)[1]
-                heapq.heapreplace(nodeHeap, (-high, high, maxOne[2], i1, thisR))
-
-        winner = heapq.heappop(nodeHeap)
-        preSpread = winner[1] + preSpread
-        S.add(winner[2])
-
-    return S
-
-
 def CELF_improved21(k, model, seedset):
     # direct celf
     global n
