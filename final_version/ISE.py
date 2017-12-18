@@ -87,6 +87,7 @@ def ise (q, times, model, random_seed):
         tem.append(model())
     q.put(float(sum(tem))/len(tem))
 
+
 def IC():
     '''
     Ise based on Independent Cascade model
@@ -137,7 +138,6 @@ def LT():
     return count
 
 
-
 if __name__ == '__main__':
     # Global variables
     n_nodes = 0
@@ -174,6 +174,8 @@ if __name__ == '__main__':
         thismodel = LT
 
     read_file(datafile, seedfile)
+
+    # Multiprocess : 7
     q = []
     p = []
     r = 10000
@@ -184,7 +186,6 @@ if __name__ == '__main__':
         p[i].start()
     for sub in p:
         sub.join()
-
     result = []
     for subq in q:
         result.append(subq.get())

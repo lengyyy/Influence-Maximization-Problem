@@ -11,6 +11,9 @@ import signal
 
 
 class timeout:
+    '''
+    Use to control the time of this program
+    '''
     def __init__(self, seconds=1, error_message='Timeout'):
         self.seconds = seconds
         self.error_message = error_message
@@ -93,75 +96,12 @@ def read_file(datafile):
         graph.add_edge(int(thisline[0]), int(thisline[1]), float(thisline[2]))
 
 
-def gernralGreedy(k, model):
-    S = set()
-    R = 10000
-    Candidate = graph.keys()
-    for i in range(k):
-        addnode = []
-        for node in Candidate:
-            Spread = float(0)
-            newSeed = S.copy()
-            newSeed.add(node)
-            for i in range(R):
-                Spread = Spread + model(newSeed)
-            Spread = Spread/R
-            addnode.append((Spread, node))
-        addnode.sort(reverse=True)
-        winner = addnode[0][1]
-        S.add(winner)
-        Candidate.remove(winner)
-    return S, addnode[0][0]
-
-
-def CELF(k, seedset):##
-    global p, q_in, q_out
-    global n
-    S = set()
-    nodeHeap = []
-    preSpread = 0
-    for node in seedset:
-        for qin in q_in:
-            qin.put(True)
-            qin.put(10000/7)
-            qin.put({node})
-            qin.put(preSpread)
-        result = []
-        for qout in q_out:
-            result.append(qout.get(True))
-        high = sum(result) / len(result)
-        nodeHeap.append((-high, high, node, 1))
-    heapq.heapify(nodeHeap)
-    winner = heapq.heappop(nodeHeap)
-    preSpread = winner[1] + preSpread
-    S.add(winner[2])
-
-    for i1 in range(k-1):
-        seedId = i1 + 2
-        while nodeHeap[0][3] != seedId:
-            maxOne = nodeHeap[0]
-            newSeed = S.copy()
-            newSeed.add(maxOne[2])
-            for qin in q_in:
-                qin.put(True)
-                qin.put(10000 / 7)
-                qin.put(newSeed)
-                qin.put(preSpread)
-            result = []
-            for qout in q_out:
-                result.append(qout.get(True))
-            delta = sum(result) / len(result)
-            heapq.heapreplace(nodeHeap, (-delta, delta, maxOne[2], seedId))
-
-
-        winner = heapq.heappop(nodeHeap)
-        preSpread = winner[1] + preSpread
-        S.add(winner[2])
-
-    return S
-
-
 def Heuristics(k):
+    '''
+    A Heuristics method to find the seedset
+    :param k: the number of seed
+    :return: seedset
+    '''
     outdegree = {}
     h = {}
     S = set()
@@ -178,6 +118,12 @@ def Heuristics(k):
 
 
 def Heuristics_improved(k):
+    '''
+    A improved Heuristics method to find the seedset,
+    Consider the influence of a choosed seed to its neighbors
+    :param k: the number of seed
+    :return: seedset
+    '''
     outdegree = {}
     h = {}
     S = set()
@@ -200,6 +146,11 @@ def Heuristics_improved(k):
 
 
 def heuristics_CELF_improved(k):
+    '''
+    First use heuristic to find 8*k seedset, then use celf_improved to find seedset
+    :param k: the num of seed
+    :return: seedset
+    '''
     num_seed = 8*k
     if num_seed > n_nodes:
         num_seed = n_nodes
@@ -208,6 +159,13 @@ def heuristics_CELF_improved(k):
 
 
 def CELF_improved(k, seedset):
+    '''
+    Add some improvement to the tradictional CELF
+    The speed is more fasted than tradictional CELF
+    :param k: num of seed
+    :param seedset: seedset from heuristic
+    :return: seedset
+    '''
     global p, q_in, q_out, final_seed
     Rs = {1000: 10000}
     nodeHeap = []
@@ -264,12 +222,9 @@ def CELF_improved(k, seedset):
         final_seed.add(winner[2])
 
 
-
-
-
 def ise(random_seed, model, q_in, q_out):
     '''
-    Influence spread estimation
+    Subprocess: Influence spread estimation
     :param times: the run times
     :param model: The diffusion model: IC or LT
     :return: the average influence spread
@@ -309,7 +264,6 @@ def ise_finalresult(model, seedset):
     for i in range(10000):
         tem.append(model(seedset))
     return float(sum(tem)) / 10000
-
 
 
 def IC(seedset):
@@ -399,6 +353,7 @@ if __name__ == '__main__':
     random.seed(random_seed)
     read_file(datafile)
 
+    # Multiple process to calculate ise
     q_in = []
     q_out = []
     p = []
@@ -409,6 +364,7 @@ if __name__ == '__main__':
         p.append(Process(target=ise, args=(random_seed+i, thismodel, q_in[i], q_out[i])))
         p[i].start()
 
+    # time control
     if termination_type == 1:
         try:
             with timeout(seconds=runTime - 1):
@@ -423,7 +379,7 @@ if __name__ == '__main__':
         for sub in p:
             sub.terminate()
 
-    # If not enough time
+    # If number of seedset is not enough
     res = k-len(final_seed)
     if res != 0:
         res_graph = copy.deepcopy(graph)

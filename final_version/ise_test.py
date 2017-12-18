@@ -5,20 +5,46 @@ import os
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 NUMBER_RUN = 1
-INSTANCES = ['gdb1', 'gdb10', 'val1A',
-             'val4A', 'val7A', 'egl-e1-A', 'egl-s1-A']
-TIME_LIMITS = ['10']
+INSTANCES = ['network', 'NetHEPT']
+INSTANCES2_1 = []
+INSTANCES2_2 =[]
+k = ['1', '5', '10', '20', '50']
+m = ['IC', 'LT']
+t = ['60', '200', '600', '1200']
+
+
+for kk in k:
+    for mm in m:
+        for tt in t:
+            s = "network"+"-"+str(kk)+"-"+str(mm)+"-"+str(tt)
+            INSTANCES2_1.append(s)
+for kk in k:
+    for mm in m:
+        for tt in t:
+            s = "NetHEPT" + "-" + str(kk) + "-" + str(mm) + "-" + str(tt)
+            INSTANCES2_2.append(s)
+print INSTANCES2_1
+print INSTANCES2_2
+quit()
+
 for i in range(NUMBER_RUN):
-    seed = str(time.time())
     for instance in INSTANCES:
-        for t in TIME_LIMITS:
-            in_file = DIR_PATH + '/CARP_samples/%s.dat' % instance
-            out_file = open('./output/%s-%s.txt' % (instance, t), 'a')
-            # print(dir_path)
-            command = ['python2', DIR_PATH + '/CARP_solver.py',
-                       in_file, '-t', t, '-s', seed]
-            process = subprocess.Popen(command, stdout=out_file)
-            time_start = time.time()
-            process.wait()
-            time_end = time.time()
-            print(instance,i, t, time_end - time_start)
+        if instance == 'network':
+            i2 = INSTANCES2_1
+        else:
+            i2 = INSTANCES2_2
+        for instance2 in i2:
+            for mm in m:
+                in_file = DIR_PATH + '/test_data/%s.txt' % instance
+                in_file2 = DIR_PATH + '/output/imp/hastime/%s.txt' % instance2
+                out_file = open('./output/ise/%s-%s-%s-%s.txt' % (instance, kk, mm, tt), 'a')
+                # print(dir_path)
+                command = ['python', DIR_PATH + '/ISE.py',
+                           '-i', in_file, '-s', in_file2, '-m', mm, '-b', '1', '-t', '60', '-r', str(time.time())]
+                process = subprocess.Popen(command, stdout=out_file)
+                time_start = time.time()
+                process.wait()
+                time_end = time.time()
+                print(instance, instance2, mm, time_end - time_start)
+
+
