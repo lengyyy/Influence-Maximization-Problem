@@ -1,4 +1,3 @@
-from graph import Graph
 import random
 import time
 import heapq
@@ -8,7 +7,6 @@ import sys
 import getopt
 from multiprocessing import Process, Queue, TimeoutError
 import copy
-import traceback
 import signal
 
 
@@ -26,6 +24,59 @@ class timeout:
 
     def __exit__(self, type, value, traceback):
         signal.alarm(0)
+
+
+
+
+class Graph(dict):
+    """
+        An exemplary graph structure:
+        {"A": {"B":1, "C": 2},
+        "B": {"C": 3, "D": 4)},
+        "C": {"D": 5},
+        "D": {}}
+        """
+    def __init__(self):
+        pass
+
+    def v(self):
+        """Return the number of nodes (the graph order)."""
+        num = len(self)
+        return num
+
+    def e(self):
+        """Return the number of edges in O(V) time."""
+        edges = sum(len(self[node]) for node in self)
+        return edges
+
+    def add_node(self, node):
+        """Add a node to the graph."""
+        if node not in self:
+            self[node] = dict()
+
+    def add_edge(self, source, target, weight):
+        """Add an edge to the graph (missing nodes are created)."""
+        self.add_node(source)
+        self.add_node(target)
+        self[source][target] = weight
+
+    def outdegree(self, source):
+        """Return the outdegree of the node."""
+        return len(self[source])
+
+    def neighbor(self,source):
+        return self[source].items()
+
+    def neighbor_node(self,source):
+        return self[source].keys()
+
+    def del_node(self, source):
+        """Remove a node from the graph (with edges)."""
+        for target in self.keys():
+            if source in self[target].keys():
+                del self[target][source]
+        del self[source]
+
 
 def read_file(datafile):
     """
@@ -312,8 +363,6 @@ def LT(seedset):
 
 
 if __name__ == '__main__':
-    start = time.time()
-
     # Global variables
     n_nodes = 0
     n_edges = 0
@@ -365,7 +414,7 @@ if __name__ == '__main__':
             with timeout(seconds=runTime - 1):
                 heuristics_CELF_improved(k)
         except TimeoutError:
-            print "except"
+            pass
         finally:
             for sub in p:
                 sub.terminate()
@@ -377,7 +426,6 @@ if __name__ == '__main__':
     # If not enough time
     res = k-len(final_seed)
     if res != 0:
-        print "not enough!"##
         res_graph = copy.deepcopy(graph)
         for node in final_seed:
             res_graph.del_node(node)
@@ -386,11 +434,7 @@ if __name__ == '__main__':
             print s
         for s in res_seed:
             print s
-        print time.time() - start
-        print ise_finalresult(thismodel, final_seed.union(res_seed))##
     else:
         for s in final_seed:
             print s
-        print time.time() - start
-        print ise_finalresult(thismodel, final_seed)##
 
