@@ -37,7 +37,7 @@ def ise (q, times, model, random_seed):
     tem = []
     for i in range(times):
         tem.append(model())
-    q.put(float(sum(tem))/times)
+    q.put(float(sum(tem))/len(tem))
 
 def IC():
     '''
@@ -99,55 +99,50 @@ if __name__ == '__main__':
     graph = Graph()
     seedlist = []
 
-    # read the arguments from termination
-    # opts, args = getopt.getopt(sys.argv[1:], 'i:s:m:b:t:r:')
-    # for (opt, val) in opts:
-    #     if opt == '-i':
-    #         datafile = val
-    #     elif opt == '-s':
-    #         seedfile = val
-    #     elif opt == '-m':
-    #         model_type = val
-    #     elif opt == '-b':
-    #         termination_type = int(val)
-    #     elif opt == '-t':
-    #         runTime = float(val)
-    #     elif opt == '-r':
-    #         random_seed = float(val)
+    #read the arguments from termination
+    opts, args = getopt.getopt(sys.argv[1:], 'i:s:m:b:t:r:')
+    for (opt, val) in opts:
+        if opt == '-i':
+            datafile = val
+        elif opt == '-s':
+            seedfile = val
+        elif opt == '-m':
+            model_type = val
+        elif opt == '-b':
+            termination_type = int(val)
+        elif opt == '-t':
+            runTime = float(val)
+        elif opt == '-r':
+            random_seed = float(val)
 
 
-    datafile = "../test data/NetHEPT.txt"
-    seedfile = "../test data/seeds2.txt"
-    model_type = 'IC'
-    termination_type = 0
-    runTime = 0
-    random_seed = 123
-
+    # datafile = "../test data/NetHEPT.txt"
+    # seedfile = "../test data/seeds2.txt"
+    # model_type = 'IC'
+    # termination_type = 0
+    # runTime = 0
+    # random_seed = 123
     if model_type == 'IC':
         thismodel = IC
     elif model_type == 'LT':
         thismodel = LT
-    read_file(datafile, seedfile)
 
+    read_file(datafile, seedfile)
     q = []
     p = []
     r = 10000
     n = 7
-    print time.time()-start
     for i in range(n):
         q.append(Queue())
         p.append(Process(target=ise, args=(q[i], r/n, thismodel, random_seed+i)))
         p[i].start()
-
     for sub in p:
         sub.join()
-
 
     result = []
     for subq in q:
         result.append(subq.get())
     print result
     print sum(result)/len(result)
-
 
     print time.time() - start

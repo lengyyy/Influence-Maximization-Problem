@@ -6,8 +6,26 @@ from scipy import stats
 import numpy as np
 import sys
 import getopt
-from multiprocessing import Process, Queue, Pool
+from multiprocessing import Process, Queue, TimeoutError
+import copy
+import traceback
+import signal
 
+
+class timeout:
+    def __init__(self, seconds=1, error_message='Timeout'):
+        self.seconds = seconds
+        self.error_message = error_message
+
+    def handle_timeout(self, signum, frame):
+        raise TimeoutError(self.error_message)
+
+    def __enter__(self):
+        signal.signal(signal.SIGALRM, self.handle_timeout)
+        signal.alarm(self.seconds)
+
+    def __exit__(self, type, value, traceback):
+        signal.alarm(0)
 
 def read_file(datafile):
     """
@@ -112,20 +130,20 @@ def Heuristics_improved(k):
     outdegree = {}
     h = {}
     S = set()
-    for node in graph.keys():
-        outdegree[node] = graph.outdegree(node)
-    for node in graph.keys():
+    for node in res_graph.keys():
+        outdegree[node] = res_graph.outdegree(node)
+    for node in res_graph.keys():
         h[node] = 0
-        for neighbor, weight in graph.neighbor(node):
+        for neighbor, weight in res_graph.neighbor(node):
             h[node] += weight*outdegree[neighbor]
 
     for i in range(k):
         winner = max(h, key=h.get)
         h.pop(winner)
         S.add(winner)
-        for neighbor, weight in graph.neighbor(winner):
+        for neighbor, weight in res_graph.neighbor(winner):
                if neighbor in h:
-                union = len(set(graph.neighbor_node(winner)).intersection(set(graph.neighbor_node(neighbor))))
+                union = len(set(res_graph.neighbor_node(winner)).intersection(set(graph.neighbor_node(neighbor))))
                 h[neighbor] = (1-weight)*(h[neighbor]-union)
     return S
 
@@ -139,9 +157,7 @@ def heuristics_CELF_improved(k):
 
 
 def CELF_improved(k, seedset):
-    global p, q_in, q_out
-    global n
-    S = set()
+    global p, q_in, q_out, final_seed
     Rs = {1000: 10000}
     nodeHeap = []
     preSpread = 0
@@ -162,7 +178,7 @@ def CELF_improved(k, seedset):
 
         while nodeHeap[0][3] != i1 or nodeHeap[0][4] != 10000:
             maxOne = nodeHeap[0]
-            newSeed = S.copy()
+            newSeed = final_seed.copy()
             newSeed.add(maxOne[2])
             if maxOne[3] == i1:
                 thisR = Rs[maxOne[4]]
@@ -194,9 +210,9 @@ def CELF_improved(k, seedset):
 
         winner = heapq.heappop(nodeHeap)
         preSpread = winner[1] + preSpread
-        S.add(winner[2])
+        final_seed.add(winner[2])
 
-    return S
+
 
 
 
@@ -250,8 +266,6 @@ def IC(seedset):
     Ise based on Independent Cascade model
     :return: the influence spread
     '''
-    global n
-    n += 1
     ActivitySet = list(seedset)
     nodeActived = seedset.copy()
     count = len(ActivitySet)
@@ -274,8 +288,6 @@ def LT(seedset):
     ISE based on linear threshold model
     :return: the influence spread
     '''
-    global n
-    n += 1
     ActivitySet = list(seedset)
     nodeActived = seedset.copy()
     count = len(ActivitySet)
@@ -306,7 +318,7 @@ if __name__ == '__main__':
     n_nodes = 0
     n_edges = 0
     graph = Graph()
-    n = 0##
+    final_seed = set()
 
     # read the arguments from termination
     # opts, args = getopt.getopt(sys.argv[1:], 'i:k:m:b:t:r:')
@@ -320,15 +332,15 @@ if __name__ == '__main__':
     #     elif opt == '-b':
     #         termination_type = int(val)
     #     elif opt == '-t':
-    #         runTime = float(val)
+    #         runTime = int(val)
     #     elif opt == '-r':
     #         random_seed = float(val)
 
     datafile = "../test data/network.txt"
-    k = 50
-    model_type = 'IC'
+    k = 4
+    model_type = 'LT'
     termination_type = 0
-    runTime = 0
+    runTime = 1
     random_seed = 123
 
     if model_type == 'IC':
@@ -338,9 +350,8 @@ if __name__ == '__main__':
     random.seed(random_seed)
     read_file(datafile)
 
-
     q_in = []
-    q_out =[]
+    q_out = []
     p = []
     n = 7
     for i in range(n):
@@ -349,27 +360,37 @@ if __name__ == '__main__':
         p.append(Process(target=ise, args=(random_seed+i, thismodel, q_in[i], q_out[i])))
         p[i].start()
 
-    result_seed = heuristics_CELF_improved(k)
-
-    for sub in p:
-        sub.terminate()
+    if termination_type == 1:
+        try:
+            with timeout(seconds=runTime - 1):
+                heuristics_CELF_improved(k)
+        except TimeoutError:
+            print "except"
+        finally:
+            for sub in p:
+                sub.terminate()
+    elif termination_type == 0:
+        heuristics_CELF_improved(k)
+        for sub in p:
+            sub.terminate()
 
     # If not enough time
-    res = k-len(result_seed)
+    res = k-len(final_seed)
     if res != 0:
         print "not enough!"##
-        for node in result_seed:
-            graph.del_node(node)
+        res_graph = copy.deepcopy(graph)
+        for node in final_seed:
+            res_graph.del_node(node)
         res_seed = Heuristics_improved(res)
-        for s in result_seed:
+        for s in final_seed:
             print s
         for s in res_seed:
             print s
         print time.time() - start
-        print ise_finalresult(thismodel, result_seed)##
+        print ise_finalresult(thismodel, final_seed.union(res_seed))##
     else:
-        for s in result_seed:
+        for s in final_seed:
             print s
         print time.time() - start
-        print ise_finalresult(thismodel, result_seed)##
+        print ise_finalresult(thismodel, final_seed)##
 
