@@ -1,0 +1,32 @@
+8k
+/System/Library/Frameworks/Python.framework/Versions/2.7/bin/python2.7 /Users/lengyue/Repositories/Influence-Maximization-Problem/src/IMP.py
+66
+37
+6024
+3210
+267
+6573
+47
+1241
+1434
+682
+73.9906771183
+506.3792
+
+Process finished with exit code 0
+
+/System/Library/Frameworks/Python.framework/Versions/2.7/bin/python2.7 /Users/lengyue/Repositories/Influence-Maximization-Problem/src/IMP.py
+66
+37
+2119
+6024
+3210
+6573
+47
+1241
+1434
+156
+80.1460459232
+508.51
+
+Process finished with exit code 0

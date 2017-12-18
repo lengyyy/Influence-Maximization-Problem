@@ -1,20 +1,60 @@
-Seed = 10
+def CELF_improved_10(k, seedset):
+    global p, q_in, q_out
+    global n
+    S = set()
+    Rs = {1000: 10000}
+    nodeHeap = []
+    preSpread = 0
+    for node in seedset:
+        for qin in q_in:
+            qin.put(False)
+            qin.put(1000/7)
+            qin.put({node})
+            qin.put(preSpread)
+        result = []
+        for qout in q_out:
+            result.append(qout.get(True))
+        high = sum(result) / len(result)
+        nodeHeap.append((-high, high, node, -1, 100))
+    heapq.heapify(nodeHeap)
 
-10
-Combine (set([66, 37, 2119, 6024, 3210, 6573, 47, 1241, 1434, 156]), 507.2177)
-182800
-170.837527037
+    for i1 in range(k):
 
-Combine (set([66, 37, 2119, 6024, 3210, 6573, 47, 1241, 1434, 156]), 507.5999)
-205000
-206.565222025
+        while nodeHeap[0][3] != i1 or nodeHeap[0][4] != 10000:
+            maxOne = nodeHeap[0]
+            newSeed = S.copy()
+            newSeed.add(maxOne[2])
+            if maxOne[3] == i1:
+                thisR = Rs[maxOne[4]]
+            else:
+                thisR = 1000
 
+            if thisR == 10000:
+                for qin in q_in:
+                    qin.put(True)
+                    qin.put(10000 / 7)
+                    qin.put(newSeed)
+                    qin.put(preSpread)
+                result = []
+                for qout in q_out:
+                    result.append(qout.get(True))
+                delta = sum(result) / len(result)
+                heapq.heapreplace(nodeHeap, (-delta, delta, maxOne[2], i1, thisR))
+            else:
+                for qin in q_in:
+                    qin.put(False)
+                    qin.put(thisR / 7)
+                    qin.put(newSeed)
+                    qin.put(preSpread)
+                result = []
+                for qout in q_out:
+                    result.append(qout.get(True))
+                high = sum(result) / len(result)
+                heapq.heapreplace(nodeHeap, (-high, high, maxOne[2], i1, thisR))
 
-20
-Combine (set([66, 37, 2119, 6024, 3210, 6573, 47, 1241, 1434, 156]), 507.5509)
-244000
-230.866940022
+        winner = heapq.heappop(nodeHeap)
+        preSpread = winner[1] + preSpread
+        S.add(winner[2])
+        print winner[2]
 
-Combine (set([66, 37, 2119, 6024, 3210, 47, 1241, 1434, 156, 682]), 507.0466)
-244000
-227.74187088
+    return S

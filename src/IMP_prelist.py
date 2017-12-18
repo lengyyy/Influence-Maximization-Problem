@@ -135,69 +135,79 @@ def heuristics_CELF_improved(k):
     if num_seed > n_nodes:
         num_seed = n_nodes
     seedset = Heuristics(num_seed)
+    #print {66, 37, 2119, 6024, 3210, 6573, 47, 753, 1241, 1434}.difference(seedset.intersection({66, 37, 2119, 6024, 3210, 6573, 47, 753, 1241, 1434}))
+    #print {1537, 6024, 3210, 11404, 3597, 5651, 788, 1049, 1689, 1434, 3099, 156, 2462, 432, 1827, 37, 424, 682, 43, 6573, 814, 47, 12464, 2997, 2314, 192, 66, 1987, 2119, 3656, 1482, 14414, 4559, 6352, 6482, 595, 4696, 1241, 602, 6565, 1635, 105, 236, 110, 14064, 753, 4469, 3959, 507, 7295}.difference(seedset.intersection({1537, 6024, 3210, 11404, 3597, 5651, 788, 1049, 1689, 1434, 3099, 156, 2462, 432, 1827, 37, 424, 682, 43, 6573, 814, 47, 12464, 2997, 2314, 192, 66, 1987, 2119, 3656, 1482, 14414, 4559, 6352, 6482, 595, 4696, 1241, 602, 6565, 1635, 105, 236, 110, 14064, 753, 4469, 3959, 507, 7295}))
+    #seedset.add(2119)
     return CELF_improved(k, seedset)
 
 
 def CELF_improved(k, seedset):
     global p, q_in, q_out
     global n
+    pre_result= {}
     S = set()
-    Rs = {1000: 10000}
     nodeHeap = []
     preSpread = 0
     for node in seedset:
         for qin in q_in:
-            qin.put(False)
             qin.put(1000/7)
             qin.put({node})
             qin.put(preSpread)
+            qin.put([])
         result = []
         for qout in q_out:
+            qout.get(True)
             result.append(qout.get(True))
+            qout.get(True)
+            pre_result[node] = qout.get(True)
         high = sum(result) / len(result)
-        nodeHeap.append((-high, high, node, -1, 100))
+        nodeHeap.append((-high, high, node, -1, 1000, False))
     heapq.heapify(nodeHeap)
 
     for i1 in range(k):
-
-        while nodeHeap[0][3] != i1 or nodeHeap[0][4] != 10000:
+        while nodeHeap[0][3] != i1 or nodeHeap[0][5] is not True:
             maxOne = nodeHeap[0]
             newSeed = S.copy()
             newSeed.add(maxOne[2])
             if maxOne[3] == i1:
-                thisR = Rs[maxOne[4]]
+                thisR = maxOne[4]+1000
             else:
-                thisR = 1000
+                if maxOne[3] == -1:
+                    thisR = 2000
+                else:
+                    thisR = 1000
+                    for key, value in pre_result:
+                        value = []
 
-            if thisR == 10000:
-                for qin in q_in:
-                    qin.put(True)
-                    qin.put(10000 / 7)
-                    qin.put(newSeed)
-                    qin.put(preSpread)
-                result = []
-                for qout in q_out:
-                    result.append(qout.get(True))
-                delta = sum(result) / len(result)
-                heapq.heapreplace(nodeHeap, (-delta, delta, maxOne[2], i1, thisR))
+
+            for qin in q_in:
+                qin.put(1000 / 7)
+                qin.put(newSeed)
+                qin.put(preSpread)
+                qin.put(pre_result[maxOne[2]])
+            means = []
+            highs = []
+            lows = []
+            for qout in q_out:
+                means.append(qout.get(True))
+                highs.append(qout.get(True))
+                lows.append(qout.get(True))
+                pre_result[node] = qout.get(True)
+            delta = sum(means) / len(means)
+
+            if [max(highs) - min(lows)] / delta < 0.01:
+                print thisR
+                heapq.heapreplace(nodeHeap, (-delta, delta, maxOne[2], i1, thisR, True))
             else:
-                for qin in q_in:
-                    qin.put(False)
-                    qin.put(thisR / 7)
-                    qin.put(newSeed)
-                    qin.put(preSpread)
-                result = []
-                for qout in q_out:
-                    result.append(qout.get(True))
-                high = sum(result) / len(result)
-                heapq.heapreplace(nodeHeap, (-high, high, maxOne[2], i1, thisR))
+                theHigh = sum(highs) / len(highs)
+                heapq.heapreplace(nodeHeap, (-theHigh, theHigh, maxOne[2], i1, thisR, False))
 
         winner = heapq.heappop(nodeHeap)
         preSpread = winner[1] + preSpread
         S.add(winner[2])
+        print winner[2]
 
     return S
-
 
 
 def ise(random_seed, model, q_in, q_out):
@@ -209,26 +219,26 @@ def ise(random_seed, model, q_in, q_out):
     '''
     random.seed(random_seed)
     while True:
-        Accurate = q_in.get(True)
         times = q_in.get(True)
         seedset = q_in.get(True)
         preSpread = q_in.get(True)
+        delta = q_in.get(True)
 
-        if Accurate is True:
-            tem = []
-            for i in range(times):
-                tem.append(model(seedset))
-            q_out.put(float(sum(tem)) / times - preSpread)
+        for i in range(times):
+            delta.append(model(seedset) - preSpread)
+        print len(delta)
+        mean = np.mean(delta)
+        if mean>100: print "!"
+        std = stats.sem(delta)
+        if std == 0:
+            low = delta[0]
+            high = delta[0]
         else:
-            delta = []
-            for i in range(times):
-                delta.append(model(seedset) - preSpread)
-            std = stats.sem(delta)
-            if std == 0:
-                high = delta[0]
-            else:
-                high = stats.t.interval(0.95, len(delta) - 1, loc=np.mean(delta), scale=std)[1]
-            q_out.put(high)
+            low, high = stats.t.interval(0.95, len(delta) - 1, loc=mean, scale=std)
+        q_out.put(mean)
+        q_out.put(high)
+        q_out.put(low)
+        q_out.put(delta)
 
 
 def ise_finalresult(model, seedset):
@@ -324,8 +334,8 @@ if __name__ == '__main__':
     #     elif opt == '-r':
     #         random_seed = float(val)
 
-    datafile = "../test data/network.txt"
-    k = 50
+    datafile = "../test data/NetHEPT.txt"
+    k = 4
     model_type = 'IC'
     termination_type = 0
     runTime = 0
@@ -353,6 +363,7 @@ if __name__ == '__main__':
 
     for sub in p:
         sub.terminate()
+
 
     # If not enough time
     res = k-len(result_seed)
