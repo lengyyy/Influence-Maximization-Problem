@@ -6,7 +6,7 @@ import os
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 NUMBER_RUN = 1
 INSTANCES = ['network', 'NetHEPT']
-k = ['1', '5', '10', '20', '50', '100']
+k = ['1', '5', '10', '20', '50']
 m = ['IC', 'LT']
 for i in range(NUMBER_RUN):
     for instance in INSTANCES:
