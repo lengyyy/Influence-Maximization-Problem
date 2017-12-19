@@ -15,9 +15,9 @@ for i in range(NUMBER_RUN):
             for mm in m:
                 for tt in t:
                     in_file = DIR_PATH + '/test_data/%s.txt' % instance
-                    out_file = open('./output/imp/hastime/%s-%s-%s-%s.txt' % (instance, kk, mm, tt), 'a')
+                    out_file = open('./output2/imp/hastime/%s-%s-%s-%s.txt' % (instance, kk, mm, tt), 'a')
                     # print(dir_path)
-                    command = ['python', DIR_PATH + '/IMP.py',
+                    command = ['python', DIR_PATH + '/IMP2.py',
                                '-i', in_file, '-k', kk, '-m', mm, '-b', '1', '-t', tt, '-r', str(time.time())]
                     process = subprocess.Popen(command, stdout=out_file)
                     time_start = time.time()

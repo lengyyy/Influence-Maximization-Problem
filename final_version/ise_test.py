@@ -25,7 +25,6 @@ for kk in k:
             INSTANCES2_2.append(s)
 print INSTANCES2_1
 print INSTANCES2_2
-quit()
 
 for i in range(NUMBER_RUN):
     for instance in INSTANCES:
@@ -36,8 +35,8 @@ for i in range(NUMBER_RUN):
         for instance2 in i2:
             for mm in m:
                 in_file = DIR_PATH + '/test_data/%s.txt' % instance
-                in_file2 = DIR_PATH + '/output/imp/hastime/%s.txt' % instance2
-                out_file = open('./output/ise/%s-%s-%s-%s.txt' % (instance, kk, mm, tt), 'a')
+                in_file2 = DIR_PATH + '/output2/imp/hastime/%s.txt' % instance2
+                out_file = open('./output2/ise/%s.txt' % instance2, 'a')
                 # print(dir_path)
                 command = ['python', DIR_PATH + '/ISE.py',
                            '-i', in_file, '-s', in_file2, '-m', mm, '-b', '1', '-t', '60', '-r', str(time.time())]

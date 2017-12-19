@@ -1,4 +1,3 @@
-from graph import Graph
 import random
 import time
 import heapq
@@ -8,11 +7,13 @@ import sys
 import getopt
 from multiprocessing import Process, Queue, TimeoutError
 import copy
-import traceback
 import signal
 
 
 class timeout:
+    '''
+    Use to control the time of this program
+    '''
     def __init__(self, seconds=1, error_message='Timeout'):
         self.seconds = seconds
         self.error_message = error_message
@@ -26,6 +27,59 @@ class timeout:
 
     def __exit__(self, type, value, traceback):
         signal.alarm(0)
+
+
+
+
+class Graph(dict):
+    """
+        An exemplary graph structure:
+        {"A": {"B":1, "C": 2},
+        "B": {"C": 3, "D": 4)},
+        "C": {"D": 5},
+        "D": {}}
+        """
+    def __init__(self):
+        pass
+
+    def v(self):
+        """Return the number of nodes (the graph order)."""
+        num = len(self)
+        return num
+
+    def e(self):
+        """Return the number of edges in O(V) time."""
+        edges = sum(len(self[node]) for node in self)
+        return edges
+
+    def add_node(self, node):
+        """Add a node to the graph."""
+        if node not in self:
+            self[node] = dict()
+
+    def add_edge(self, source, target, weight):
+        """Add an edge to the graph (missing nodes are created)."""
+        self.add_node(source)
+        self.add_node(target)
+        self[source][target] = weight
+
+    def outdegree(self, source):
+        """Return the outdegree of the node."""
+        return len(self[source])
+
+    def neighbor(self,source):
+        return self[source].items()
+
+    def neighbor_node(self,source):
+        return self[source].keys()
+
+    def del_node(self, source):
+        """Remove a node from the graph (with edges)."""
+        for target in self.keys():
+            if source in self[target].keys():
+                del self[target][source]
+        del self[source]
+
 
 def read_file(datafile):
     """
@@ -42,75 +96,12 @@ def read_file(datafile):
         graph.add_edge(int(thisline[0]), int(thisline[1]), float(thisline[2]))
 
 
-def gernralGreedy(k, model):
-    S = set()
-    R = 10000
-    Candidate = graph.keys()
-    for i in range(k):
-        addnode = []
-        for node in Candidate:
-            Spread = float(0)
-            newSeed = S.copy()
-            newSeed.add(node)
-            for i in range(R):
-                Spread = Spread + model(newSeed)
-            Spread = Spread/R
-            addnode.append((Spread, node))
-        addnode.sort(reverse=True)
-        winner = addnode[0][1]
-        S.add(winner)
-        Candidate.remove(winner)
-    return S, addnode[0][0]
-
-
-def CELF(k, seedset):##
-    global p, q_in, q_out
-    global n
-    S = set()
-    nodeHeap = []
-    preSpread = 0
-    for node in seedset:
-        for qin in q_in:
-            qin.put(True)
-            qin.put(10000/7)
-            qin.put({node})
-            qin.put(preSpread)
-        result = []
-        for qout in q_out:
-            result.append(qout.get(True))
-        high = sum(result) / len(result)
-        nodeHeap.append((-high, high, node, 1))
-    heapq.heapify(nodeHeap)
-    winner = heapq.heappop(nodeHeap)
-    preSpread = winner[1] + preSpread
-    S.add(winner[2])
-
-    for i1 in range(k-1):
-        seedId = i1 + 2
-        while nodeHeap[0][3] != seedId:
-            maxOne = nodeHeap[0]
-            newSeed = S.copy()
-            newSeed.add(maxOne[2])
-            for qin in q_in:
-                qin.put(True)
-                qin.put(10000 / 7)
-                qin.put(newSeed)
-                qin.put(preSpread)
-            result = []
-            for qout in q_out:
-                result.append(qout.get(True))
-            delta = sum(result) / len(result)
-            heapq.heapreplace(nodeHeap, (-delta, delta, maxOne[2], seedId))
-
-
-        winner = heapq.heappop(nodeHeap)
-        preSpread = winner[1] + preSpread
-        S.add(winner[2])
-
-    return S
-
-
 def Heuristics(k):
+    '''
+    A Heuristics method to find the seedset
+    :param k: the number of seed
+    :return: seedset
+    '''
     outdegree = {}
     h = {}
     S = set()
@@ -127,6 +118,12 @@ def Heuristics(k):
 
 
 def Heuristics_improved(k):
+    '''
+    A improved Heuristics method to find the seedset,
+    Consider the influence of a choosed seed to its neighbors
+    :param k: the number of seed
+    :return: seedset
+    '''
     outdegree = {}
     h = {}
     S = set()
@@ -149,6 +146,11 @@ def Heuristics_improved(k):
 
 
 def heuristics_CELF_improved(k):
+    '''
+    First use heuristic to find 8*k seedset, then use celf_improved to find seedset
+    :param k: the num of seed
+    :return: seedset
+    '''
     num_seed = 8*k
     if num_seed > n_nodes:
         num_seed = n_nodes
@@ -157,6 +159,13 @@ def heuristics_CELF_improved(k):
 
 
 def CELF_improved(k, seedset):
+    '''
+    Add some improvement to the tradictional CELF
+    The speed is more fasted than tradictional CELF
+    :param k: num of seed
+    :param seedset: seedset from heuristic
+    :return: seedset
+    '''
     global p, q_in, q_out, final_seed
     Rs = {1000: 10000}
     nodeHeap = []
@@ -213,12 +222,9 @@ def CELF_improved(k, seedset):
         final_seed.add(winner[2])
 
 
-
-
-
 def ise(random_seed, model, q_in, q_out):
     '''
-    Influence spread estimation
+    Subprocess: Influence spread estimation
     :param times: the run times
     :param model: The diffusion model: IC or LT
     :return: the average influence spread
@@ -258,7 +264,6 @@ def ise_finalresult(model, seedset):
     for i in range(10000):
         tem.append(model(seedset))
     return float(sum(tem)) / 10000
-
 
 
 def IC(seedset):
@@ -312,8 +317,6 @@ def LT(seedset):
 
 
 if __name__ == '__main__':
-    start = time.time()
-
     # Global variables
     n_nodes = 0
     n_edges = 0
@@ -322,26 +325,26 @@ if __name__ == '__main__':
 
     # read the arguments from termination
     opts, args = getopt.getopt(sys.argv[1:], 'i:k:m:b:t:r:')
-    # for (opt, val) in opts:
-    #     if opt == '-i':
-    #         datafile = val
-    #     elif opt == '-k':
-    #         k = int(val)
-    #     elif opt == '-m':
-    #         model_type = val
-    #     elif opt == '-b':
-    #         termination_type = int(val)
-    #     elif opt == '-t':
-    #         runTime = int(val)
-    #     elif opt == '-r':
-    #         random_seed = float(val)
+    for (opt, val) in opts:
+        if opt == '-i':
+            datafile = val
+        elif opt == '-k':
+            k = int(val)
+        elif opt == '-m':
+            model_type = val
+        elif opt == '-b':
+            termination_type = int(val)
+        elif opt == '-t':
+            runTime = int(val)
+        elif opt == '-r':
+            random_seed = float(val)
 
-    datafile = "../test data/NetHEPT.txt"
-    k = 50
-    model_type = 'LT'
-    termination_type = 1
-    runTime = 200
-    random_seed = 123
+    # datafile = "../test data/network.txt"
+    # k = 4
+    # model_type = 'LT'
+    # termination_type = 0
+    # runTime = 1
+    # random_seed = 123
 
     if model_type == 'IC':
         thismodel = IC
@@ -350,6 +353,7 @@ if __name__ == '__main__':
     random.seed(random_seed)
     read_file(datafile)
 
+    # Multiple process to calculate ise
     q_in = []
     q_out = []
     p = []
@@ -360,12 +364,13 @@ if __name__ == '__main__':
         p.append(Process(target=ise, args=(random_seed+i, thismodel, q_in[i], q_out[i])))
         p[i].start()
 
+    # time control
     if termination_type == 1:
         try:
             with timeout(seconds=runTime - 1):
                 heuristics_CELF_improved(k)
         except TimeoutError:
-            print "except"
+            pass
         finally:
             for sub in p:
                 sub.terminate()
@@ -374,31 +379,24 @@ if __name__ == '__main__':
         for sub in p:
             sub.terminate()
 
-    # If not enough time
+    # If number of seedset is not enough
     res = k-len(final_seed)
     if res != 0:
-        print "not enough!"##
         res_seed = Heuristics_improved(k)
         add_list = []
         for rs in res_seed:
             if rs[1] not in final_seed:
                 add_list.append(rs)
         add_list.sort(reverse=True)
-        print final_seed
-        print add_list
+        print final_seed##
+        print add_list##
 
         for s in final_seed:
             print s
         for i in range(res):
             beAdd = add_list[i][1]
             print beAdd
-            final_seed.add(beAdd)
-        print time.time() - start
-        print final_seed
-        print ise_finalresult(thismodel, final_seed)##
     else:
         for s in final_seed:
             print s
-        print time.time() - start
-        print ise_finalresult(thismodel, final_seed)##
 
