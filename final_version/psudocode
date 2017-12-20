@@ -1,0 +1,19 @@
+initialize SeedSet, h
+for each node in graph
+	calculate outdegree[node]
+end for
+for each node in graph
+	h[node] = 0
+	for each neighbor of node:
+		h[node] += weight*outdegree[neighbor]
+	end for
+end for
+While SeedSet is not enough:
+	seed is the node has maximun h
+	Seedset.add(seed)
+	for each neighbor of seed:
+		h[neighbor] = (1-weight)*(h[neighbor]-number of interesction)
+	end for
+end while
+
+return SeedSet
