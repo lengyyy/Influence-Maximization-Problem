@@ -127,20 +127,20 @@ def Heuristics_improved(k):
     outdegree = {}
     h = {}
     S = set()
-    for node in res_graph.keys():
-        outdegree[node] = res_graph.outdegree(node)
-    for node in res_graph.keys():
+    for node in graph.keys():
+        outdegree[node] = graph.outdegree(node)
+    for node in graph.keys():
         h[node] = 0
-        for neighbor, weight in res_graph.neighbor(node):
+        for neighbor, weight in graph.neighbor(node):
             h[node] += weight*outdegree[neighbor]
 
     for i in range(k):
-        winner = max(h, key=h.get)
+        winner, winner_h = max(h.items(), key=lambda x: x[1])
         h.pop(winner)
-        S.add(winner)
-        for neighbor, weight in res_graph.neighbor(winner):
+        S.add((winner_h, winner))
+        for neighbor, weight in graph.neighbor(winner):
                if neighbor in h:
-                union = len(set(res_graph.neighbor_node(winner)).intersection(set(graph.neighbor_node(neighbor))))
+                union = len(set(graph.neighbor_node(winner)).intersection(set(graph.neighbor_node(neighbor))))
                 h[neighbor] = (1-weight)*(h[neighbor]-union)
     return S
 
@@ -382,14 +382,18 @@ if __name__ == '__main__':
     # If number of seedset is not enough
     res = k-len(final_seed)
     if res != 0:
-        res_graph = copy.deepcopy(graph)
-        for node in final_seed:
-            res_graph.del_node(node)
-        res_seed = Heuristics_improved(res)
+        res_seed = Heuristics_improved(k)
+        add_list = []
+        for rs in res_seed:
+            if rs[1] not in final_seed:
+                add_list.append(rs)
+        add_list.sort(reverse=True)
+
         for s in final_seed:
             print s
-        for s in res_seed:
-            print s
+        for i in range(res):
+            beAdd = add_list[i][1]
+            print beAdd
     else:
         for s in final_seed:
             print s

@@ -388,8 +388,6 @@ if __name__ == '__main__':
             if rs[1] not in final_seed:
                 add_list.append(rs)
         add_list.sort(reverse=True)
-        print final_seed##
-        print add_list##
 
         for s in final_seed:
             print s

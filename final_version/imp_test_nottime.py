@@ -13,7 +13,7 @@ for i in range(NUMBER_RUN):
         for kk in k:
             for mm in m:
                 in_file = DIR_PATH + '/test_data/%s.txt' % instance
-                out_file = open('./output/imp/notime/%s-%s-%s.txt' % (instance, kk, mm), 'a')
+                out_file = open('./output_final/imp/notime/%s-%s-%s.txt' % (instance, kk, mm), 'a')
                 # print(dir_path)
                 command = ['python', DIR_PATH + '/IMP.py',
                            '-i', in_file, '-k', kk, '-m', mm, '-b', '0', '-t', '0', '-r', str(time.time())]

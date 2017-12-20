@@ -17,14 +17,13 @@ for kk in k:
     for mm in m:
         for tt in t:
             s = "network"+"-"+str(kk)+"-"+str(mm)+"-"+str(tt)
-            INSTANCES2_1.append(s)
+            INSTANCES2_1.append((s, mm))
 for kk in k:
     for mm in m:
         for tt in t:
             s = "NetHEPT" + "-" + str(kk) + "-" + str(mm) + "-" + str(tt)
-            INSTANCES2_2.append(s)
-print INSTANCES2_1
-print INSTANCES2_2
+            INSTANCES2_2.append((s, mm))
+
 
 for i in range(NUMBER_RUN):
     for instance in INSTANCES:
@@ -32,18 +31,17 @@ for i in range(NUMBER_RUN):
             i2 = INSTANCES2_1
         else:
             i2 = INSTANCES2_2
-        for instance2 in i2:
-            for mm in m:
-                in_file = DIR_PATH + '/test_data/%s.txt' % instance
-                in_file2 = DIR_PATH + '/output2/imp/hastime/%s.txt' % instance2
-                out_file = open('./output2/ise/%s.txt' % instance2, 'a')
-                # print(dir_path)
-                command = ['python', DIR_PATH + '/ISE.py',
-                           '-i', in_file, '-s', in_file2, '-m', mm, '-b', '1', '-t', '60', '-r', str(time.time())]
-                process = subprocess.Popen(command, stdout=out_file)
-                time_start = time.time()
-                process.wait()
-                time_end = time.time()
-                print(instance, instance2, mm, time_end - time_start)
+        for instance2, mm in i2:
+            in_file = DIR_PATH + '/test_data/%s.txt' % instance
+            in_file2 = DIR_PATH + '/output_final/imp/hastime/%s.txt' % instance2
+            out_file = open('./output_final/ise/%s.txt' % instance2, 'a')
+            # print(dir_path)
+            command = ['python', DIR_PATH + '/ISE.py',
+                       '-i', in_file, '-s', in_file2, '-m', mm, '-b', '1', '-t', '60', '-r', str(time.time())]
+            process = subprocess.Popen(command, stdout=out_file)
+            time_start = time.time()
+            process.wait()
+            time_end = time.time()
+            print(instance, instance2, mm, time_end - time_start)
 
 
